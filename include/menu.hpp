@@ -4,6 +4,7 @@
 #include "input_handler.hpp"
 
 #include <string>
+#include <set>
 
 enum main_menu_options { PLAY, EXIT };
 enum player_color_options { RED, BLUE, GREEN, YELLOW, PINK, BROWN, CYAN, ORANGE, VIOLET };
@@ -13,6 +14,8 @@ private:
     InputHandler input_handler;
 
     void displayMainMenu(main_menu_options selected_option);
+    void displayPlayerColor(int player_number, player_color_options selected_option);
+    std::set<player_color_options> taken_colors;
 
 public:
     Menu();
@@ -22,6 +25,9 @@ public:
 
     int askPlayerNumber();
     std::string askPlayerName(int player_number);
+
+    std::string getColorName(player_color_options color);
+    std::string askPlayerColor(int player_number, player_color_options selected_option);
 };
 
 #endif

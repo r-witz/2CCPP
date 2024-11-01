@@ -2,7 +2,6 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <algorithm>
 
 std::vector<std::string> Read::readText(const std::string &filePath) {
     std::ifstream file(filePath);
