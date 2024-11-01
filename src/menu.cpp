@@ -127,6 +127,99 @@ player_color_options Menu::playerColor(int player_number) {
     return selected_option;
 }
 
+void Menu::displayTileSelection(int exchange_coupon, tile_selection_options selected_option) {
+    std::string takeLine = "|    Take          |";
+    std::string exchangeLine = "|    Exchange (" + std::to_string(exchange_coupon) + ")  |";
+
+    switch (selected_option) {
+        case tile_selection_options::TAKE:
+            takeLine = "|  ▶ Take          |";
+            break;
+        case tile_selection_options::EXCHANGE:
+            exchangeLine = "|  ▶ Exchange (" + std::to_string(exchange_coupon) + ")  |";
+    }
+
+    std::cout << "+------------------+" << std::endl
+              << "|                  |" << std::endl
+              << takeLine << std::endl
+              << exchangeLine << std::endl
+              << "|                  |" << std::endl
+              << "+------------------+" << std::endl
+              << std::endl;
+}
+
+
+tile_selection_options Menu::tileSelection(int exchange_coupon) {
+    tile_selection_options selected_option = tile_selection_options::TAKE;
+    inputs input;
+
+    do {
+        displayTileSelection(exchange_coupon, selected_option);
+        input = input_handler.getKeyPress();
+        if (input == inputs::UP || input == inputs::DOWN) {
+            selected_option = selected_option == tile_selection_options::TAKE ? tile_selection_options::EXCHANGE : tile_selection_options::TAKE;
+        }
+
+    } while(input != inputs::ENTER);
+
+    return selected_option;
+}
+
+
+void Menu::displayTileAction(tile_action_options selected_option) {
+    std::string flipLine = "|      Flip        |";
+    std::string rotateLine = "|      Rotate      |";
+    std::string placeLine = "|      Place       |";
+
+    switch (selected_option) {
+        case tile_action_options::FLIP:
+            flipLine = "|    ▶ Flip        |";
+            break;
+        case tile_action_options::ROTATE:
+            rotateLine = "|    ▶ Rotate      |";
+            break;
+        case tile_action_options::PLACE:
+            placeLine = "|    ▶ Place       |";
+    }
+
+    std::cout << "+------------------+" << std::endl
+              << "|                  |" << std::endl
+              << flipLine << std::endl
+              << rotateLine << std::endl
+              << placeLine << std::endl
+              << "|                  |" << std::endl
+              << "+------------------+" << std::endl
+              << std::endl;
+
+}
+
+
+tile_action_options Menu::tileAction() {
+    tile_action_options selected_option = tile_action_options::FLIP;
+    inputs input;
+
+    do {
+        displayTileAction(selected_option);
+        input = input_handler.getKeyPress();
+
+        if (input == inputs::UP) { selected_option = tile_action_options((static_cast<int>(selected_option) - 1 + 3) % 3); }
+        else if (input == inputs::DOWN) { selected_option = tile_action_options((static_cast<int>(selected_option) + 1) % 3); }
+    } while (input != inputs::ENTER);
+
+    return selected_option;
+
+};
+
+void Menu::displayWinner(int player_number) {
+    std::cout << "+------------------+" << std::endl
+              << "|                  |" << std::endl
+              << "|     Player " << player_number << "     |" << std::endl
+              << "|       Wins       |" << std::endl
+              << "|                  |" << std::endl
+              << "+------------------+" << std::endl
+              << std::endl;
+}
+
 int Menu::askPlayerNumber() {
     std::string buffer;
     int player_number;
@@ -151,6 +244,7 @@ std::string Menu::askPlayerName(int player_number) {
     std::string player_name;
     std::cout << "Player " << player_number << " , enter your name: ";
     std::getline(std::cin, player_name);
+    std::cout << std::endl;
     return player_name;
 }
 

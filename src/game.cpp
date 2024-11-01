@@ -23,7 +23,9 @@ void Game::start() {
     for (int i = 1; i <= player_number; i++) {
         player_color_options player_color = menu.playerColor(i);
         std::string player_name = menu.askPlayerName(i);
-        std::cout << "Player " << i << " color: " << menu.getColorName(player_color) << std::endl;
-        std::cout << "Player " << i << " name: " << player_name << std::endl;
     }
+
+    menu.tileSelection(2);
+    menu.tileAction();
+    menu.displayWinner(1);
 };
