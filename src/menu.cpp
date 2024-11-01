@@ -2,6 +2,7 @@
 #include "../include/input_handler.hpp"
 
 #include <iostream>
+#include <vector>
 
 Menu::Menu() {
     input_handler = InputHandler();
@@ -53,6 +54,79 @@ main_menu_options Menu::mainMenu() {
     return selected_option;
 }
 
+void Menu::displayPlayerColor(int player_number, player_color_options selected_option, std::set<player_color_options> selected_colors) {
+    std::string colorLines[9] = {
+        "|       Red        |",
+        "|       Blue       |",
+        "|       Green      |",
+        "|       Yellow     |",
+        "|       Pink       |",
+        "|       Brown      |",
+        "|       Cyan       |",
+        "|       Orange     |",
+        "|       Violet     |"
+    };
+
+    for (int i = 0; i < 9; ++i) {
+        player_color_options color = static_cast<player_color_options>(i);
+        if (selected_colors.count(color) > 0) { colorLines[i] = ""; }
+        else if (color == selected_option) {
+            switch (color) {
+                case player_color_options::RED: colorLines[i] = "|     ▶ Red        |"; break;
+                case player_color_options::BLUE: colorLines[i] = "|     ▶ Blue       |"; break;
+                case player_color_options::GREEN: colorLines[i] = "|     ▶ Green      |"; break;
+                case player_color_options::YELLOW: colorLines[i] = "|     ▶ Yellow     |"; break;
+                case player_color_options::PINK: colorLines[i] = "|     ▶ Pink       |"; break;
+                case player_color_options::BROWN: colorLines[i] = "|     ▶ Brown      |"; break;
+                case player_color_options::CYAN: colorLines[i] = "|     ▶ Cyan       |"; break;
+                case player_color_options::ORANGE: colorLines[i] = "|     ▶ Orange     |"; break;
+                case player_color_options::VIOLET: colorLines[i] = "|     ▶ Violet     |"; break;
+            }
+        }
+    }
+
+    std::cout << "+------------------+" << std::endl
+              << "|                  |" << std::endl
+              << "|     Player " << player_number << "     |" << std::endl
+              << "|  Choose a color  |" << std::endl
+              << "|                  |" << std::endl;
+
+    for (const auto& line : colorLines) {
+        if (!line.empty()) {
+            std::cout << line << std::endl;
+        }
+    }
+
+    std::cout << "|                  |" << std::endl
+              << "+------------------+" << std::endl
+              << std::endl;
+}
+
+player_color_options Menu::playerColor(int player_number) {
+    std::vector<player_color_options> unselected_colors;
+    for (int i = 0; i < 9; ++i) {
+        player_color_options color = static_cast<player_color_options>(i);
+        if (selected_colors.count(color) == 0) { unselected_colors.push_back(color); }
+    }
+
+    int option_count = unselected_colors.size();
+    int selected_index = 0;
+    player_color_options selected_option = unselected_colors[selected_index];
+    inputs input;
+
+    do {
+        displayPlayerColor(player_number, selected_option, selected_colors);
+        input = input_handler.getKeyPress();
+
+        if (input == inputs::UP) { selected_index = (selected_index - 1 + option_count) % option_count; }
+        else if (input == inputs::DOWN) { selected_index = (selected_index + 1) % option_count; }
+        selected_option = unselected_colors[selected_index];
+    } while (input != inputs::ENTER);
+
+    selected_colors.insert(selected_option);
+    return selected_option;
+}
+
 int Menu::askPlayerNumber() {
     std::string buffer;
     int player_number;
@@ -71,7 +145,6 @@ int Menu::askPlayerNumber() {
         catch (const std::out_of_range&) { std::cout << "The number is out of range. Please enter a number between 2 and 9.\n"; }
 
     } while (true);
-
 }
 
 std::string Menu::askPlayerName(int player_number) {
@@ -81,108 +154,17 @@ std::string Menu::askPlayerName(int player_number) {
     return player_name;
 }
 
-void Menu::displayPlayerColor(int player_number, player_color_options selected_option) {
-    int colorNumber = player_number;
-    std::string redLine = "|       Red        |";
-    std::string blueLine = "|       Blue       |";
-    std::string greenLine = "|       Green      |";
-    std::string yellowLine = "|       Yellow     |";
-    std::string pinkLine = "|       Pink       |";
-    std::string brownLine = "|       Brown      |";
-    std::string cyanLine = "|       Cyan       |";
-    std::string orangeLine = "|       Orange     |";
-    std::string violetLine = "|       Violet     |";
-
-    switch (selected_option) {
-        case player_color_options::RED:
-            redLine = "|     ▶ Red        |";
-            break;
-        case player_color_options::BLUE:
-            blueLine = "|     ▶ Blue       |";
-            break;
-        case player_color_options::GREEN:
-            greenLine = "|     ▶ Green      |";
-            break;
-        case player_color_options::YELLOW:
-            yellowLine = "|     ▶ Yellow     |";
-            break;
-        case player_color_options::PINK:
-            pinkLine = "|     ▶ Pink       |";
-            break;
-        case player_color_options::BROWN:
-            brownLine = "|     ▶ Brown      |";
-            break;
-        case player_color_options::CYAN:
-            cyanLine = "|     ▶ Cyan       |";
-            break;
-        case player_color_options::ORANGE:
-            orangeLine = "|     ▶ Orange     |";
-            break;
-        case player_color_options::VIOLET:
-            violetLine = "|     ▶ Violet     |";
-            break;
-    }
-
-    std::cout << "+------------------+" << std::endl
-              << "|                  |" << std::endl
-              << redLine << std::endl
-              << blueLine << std::endl
-              << greenLine << std::endl
-              << yellowLine << std::endl
-              << pinkLine << std::endl
-              << brownLine << std::endl
-              << cyanLine << std::endl
-              << orangeLine << std::endl
-              << violetLine << std::endl
-              << "|                  |" << std::endl
-              << "+------------------+" << std::endl
-              << std::endl;
-}
-
 std::string Menu::getColorName(player_color_options selected_option) {
     switch (selected_option) {
-        case player_color_options::RED:
-            return "Red";
-        case player_color_options::BLUE:
-            return "Blue";
-        case player_color_options::GREEN:
-            return "Green";
-        case player_color_options::YELLOW:
-            return "Yellow";
-        case player_color_options::PINK:
-            return "Pink";
-        case player_color_options::BROWN:
-            return "Brown";
-        case player_color_options::CYAN:
-            return "Cyan";
-        case player_color_options::ORANGE:
-            return "Orange";
-        case player_color_options::VIOLET:
-            return "Violet";
-        default:
-            return "";
+        case player_color_options::RED: return "Red";
+        case player_color_options::BLUE: return "Blue";
+        case player_color_options::GREEN: return "Green";
+        case player_color_options::YELLOW: return "Yellow";
+        case player_color_options::PINK: return "Pink";
+        case player_color_options::BROWN: return "Brown";
+        case player_color_options::CYAN: return "Cyan";
+        case player_color_options::ORANGE: return "Orange";
+        case player_color_options::VIOLET: return "Violet";
+        default: return "";
     }
 }
-
-std::string Menu::askPlayerColor(int player_number, player_color_options selected_option) {
-    inputs input;
-
-    do {
-        displayPlayerColor(player_number, selected_option);
-        input = input_handler.getKeyPress();
-
-        do {
-            if (input == inputs::UP) {
-                selected_option = player_color_options((static_cast<int>(selected_option) - 1 + 9) % 9);
-            } else if (input == inputs::DOWN) {
-                selected_option = player_color_options((static_cast<int>(selected_option) + 1) % 9);
-            }
-        } while (taken_colors.find(selected_option) != taken_colors.end());
-
-    } while (input != inputs::ENTER);
-
-    taken_colors.insert(selected_option);
-    return getColorName(selected_option);
-}
-
-

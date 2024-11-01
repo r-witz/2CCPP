@@ -13,18 +13,17 @@ void Game::start() {
 
     switch (selected_option) {
         case main_menu_options::PLAY:
-            player_number = menu.askPlayerNumber();
-            std::cout << "Number of Players: " << player_number << std::endl;
-            for (int i = 0; i < player_number; i++) {
-                std::string player_name = menu.askPlayerName(i + 1);
-                std::cout << "Player " << i + 1 << " name: " << player_name << std::endl;
-            }
-            for (int i = 0; i < player_number; i++) {
-                std::cout << "Player " << i + 1 << " choose your color:" << std::endl;
-                std::string player_color = menu.askPlayerColor(i + 1, player_color_options::RED);
-                std::cout << "Player " << i + 1 << " color: " << player_color << std::endl;
-            }
+            break;
         case main_menu_options::EXIT:
             return;
+    }
+
+    player_number = menu.askPlayerNumber();
+
+    for (int i = 1; i <= player_number; i++) {
+        player_color_options player_color = menu.playerColor(i);
+        std::string player_name = menu.askPlayerName(i);
+        std::cout << "Player " << i << " color: " << menu.getColorName(player_color) << std::endl;
+        std::cout << "Player " << i << " name: " << player_name << std::endl;
     }
 };
