@@ -3,7 +3,9 @@
 
 #include <iostream>
 
-Menu::Menu() {}
+Menu::Menu() {
+    input_handler = InputHandler();
+}
 
 void Menu::displayTitle() {
     std::cout << "+------------------+" << std::endl
@@ -37,7 +39,6 @@ void Menu::displayMainMenu(main_menu_options selected_option) {
 
 main_menu_options Menu::mainMenu() {
     main_menu_options selected_option = main_menu_options::PLAY;
-    InputHandler input_handler = InputHandler();
     inputs input;
 
     do {
@@ -63,7 +64,7 @@ int Menu::askPlayerNumber() {
         try {
             player_number = std::stoi(buffer);
 
-            if (player_number >= 2 && player_number <= 9) { return player_number; }
+            if (2 <= player_number && player_number <= 9) { return player_number; }
             else { std::cout << "Please enter a number between 2 and 9.\n"; }
         }
         catch (const std::invalid_argument&) { std::cout << "Invalid input. Please enter a number between 2 and 9.\n"; }

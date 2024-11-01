@@ -1,6 +1,8 @@
 #ifndef MENU_HPP
 #define MENU_HPP
 
+#include "input_handler.hpp"
+
 #include <string>
 
 enum main_menu_options { PLAY, EXIT };
@@ -8,6 +10,8 @@ enum player_color_options { RED, BLUE, GREEN, YELLOW, PINK, BROWN, CYAN, ORANGE,
 
 class Menu {
 private:
+    InputHandler input_handler;
+
     void displayMainMenu(main_menu_options selected_option);
 
 public:
@@ -15,7 +19,7 @@ public:
 
     void displayTitle();
     main_menu_options mainMenu();
-    
+
     int askPlayerNumber();
     std::string askPlayerName(int player_number);
 };

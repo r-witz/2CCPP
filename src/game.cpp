@@ -19,5 +19,4 @@ void Game::start() {
         case main_menu_options::EXIT:
             return;
     }
-
 };
