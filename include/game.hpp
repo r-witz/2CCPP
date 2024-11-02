@@ -2,12 +2,12 @@
 #define GAME_HPP
 
 #include "menu.hpp"
-#include "tiles.hpp"
+#include "tile_manager.hpp"
 
 class Game {
 private:
     Menu menu;
-    Tiles tiles;
+    TileManager tile_manager;
     int player_number;
 
 public:
