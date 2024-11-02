@@ -3,7 +3,9 @@
 #include <fstream>
 #include <vector>
 
-std::vector<std::string> Read::readText(const std::string &filePath) {
+Tiles::Tiles() {}
+
+std::vector<std::string> Tiles::readText(const std::string &filePath) {
     std::ifstream file(filePath);
     std::vector<std::string> texts; 
     std::string text;
@@ -40,7 +42,7 @@ std::vector<std::string> Read::readText(const std::string &filePath) {
     }
 }
 
-std::vector<std::string> Read::transformText(const std::vector<std::string> &texts) {
+std::vector<std::string> Tiles::transformText(const std::vector<std::string> &texts) {
     std::vector<std::string> transformedTexts;
 
     for (const std::string &text : texts) {
@@ -62,7 +64,36 @@ std::vector<std::string> Read::transformText(const std::vector<std::string> &tex
     return transformedTexts;
 }
 
-std::vector<std::string> Read::rotateTiles(const std::vector<std::string> &texts, int rotation_number) {
+std::vector<std::string> Tiles::displayTiles(const std::vector<std::string> &texts, int display_number) {
+    std::vector<std::string> displayedTiles;
+
+    if (!texts.empty()) {
+        const std::string &text = texts[display_number];
+        std::string displayedText;
+        std::vector<std::string> lines;
+
+        for (char character : text) {
+            if (character == '\n') {
+                lines.push_back(displayedText);
+                displayedText.clear();
+            } else {
+                displayedText += character;
+            }
+        }
+
+        for (const std::string &line : lines) {
+            std::cout << line << std::endl;
+        }
+        std::cout << std::endl;
+
+        displayedTiles.insert(displayedTiles.end(), lines.begin(), lines.end());
+    }
+
+    return displayedTiles;
+}
+
+
+std::vector<std::string> Tiles::rotateTiles(const std::vector<std::string> &texts, int rotation_number) {
     std::vector<std::string> rotatedTiles;
 
     for (const std::string &text : texts) {
@@ -122,7 +153,7 @@ std::vector<std::string> Read::rotateTiles(const std::vector<std::string> &texts
 
 
 
-std::vector<std::string> Read::flipTiles(const std::vector<std::string> &texts) {
+std::vector<std::string> Tiles::flipTiles(const std::vector<std::string> &texts) {
     std::vector<std::string> flippedTiles;
 
     for (const std::string &text : texts) {

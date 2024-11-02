@@ -4,6 +4,7 @@
 
 Game::Game() {
     menu = Menu();
+    tiles = Tiles();
     player_number = 0;
 }
 
@@ -25,6 +26,11 @@ void Game::start() {
         std::string player_name = menu.askPlayerName(i);
     }
 
+    tiles.readText("data/tiles.txt");
+    tiles.transformText(tiles.readText("data/tiles.txt"));
+    
+    std::cout << "Tile to place: " << std::endl << std::endl;
+    tiles.displayTiles(tiles.transformText(tiles.readText("data/tiles.txt")), 0);
     menu.tileSelection(2);
     menu.tileAction();
     menu.displayWinner(1);
