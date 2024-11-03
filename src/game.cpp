@@ -3,6 +3,7 @@
 Game::Game() {
     menu = Menu();
     tile_manager = TileManager();
+    board = Board();
 }
 
 void Game::start() {
@@ -34,6 +35,9 @@ void Game::start() {
 
     selected_tile.display();
 
+    bool player = player_number > 4;
+
+
     tile_action_options tile_action_option = menu.tileAction();
     switch (tile_action_option) {
         case tile_action_options::FLIP:
@@ -45,6 +49,7 @@ void Game::start() {
             selected_tile.display();
             break;
         case tile_action_options::PLACE:
+            board.displayBoard(player);
             break;
     }
 
