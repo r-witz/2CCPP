@@ -17,6 +17,7 @@ void Game::start() {
 
     player_number = menu.askPlayerNumber();
     tile_manager.randomizeTileQueue(player_number);
+    board = Board(player_number);
 
     for (int i = 1; i <= player_number; i++) {
         player_color_options player_color = menu.playerColor(i);
@@ -35,9 +36,6 @@ void Game::start() {
 
     selected_tile.display();
 
-    bool player = player_number > 4;
-
-
     tile_action_options tile_action_option = menu.tileAction();
     switch (tile_action_option) {
         case tile_action_options::FLIP:
@@ -49,7 +47,7 @@ void Game::start() {
             selected_tile.display();
             break;
         case tile_action_options::PLACE:
-            board.displayBoard(player);
+            board.displayBoard();
             break;
     }
 

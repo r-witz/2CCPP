@@ -3,15 +3,18 @@
 
 #include <vector>
 
-enum board_case {EMPTY, P1, P2, P3, P4, P5, P6, P7, P8, P9, TILE_EXCHANGE, STONE, ROBBERY};
+enum cell_state {EMPTY, P1, P2, P3, P4, P5, P6, P7, P8, P9, TILE_EXCHANGE, STONE, ROBBERY};
 
 class Board {
 protected:
-    std::vector<std::vector<board_case>> board;
+    int size;
+    std::vector<std::vector<cell_state>> board;
 
 public:
     Board();
-    void displayBoard(bool isPlayer);
+    Board(int number_player);
+
+    void displayBoard();
 };
 
 #endif

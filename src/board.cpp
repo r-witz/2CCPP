@@ -3,59 +3,30 @@
 
 
 Board::Board() {
-    board = std::vector<std::vector<board_case>>(30, std::vector<board_case>(30, EMPTY));
+    size = 30;
+    board = std::vector<std::vector<cell_state>>(size, std::vector<cell_state>(size, cell_state::EMPTY));
 }
 
+Board::Board(int number_player) {
+    size = number_player > 4 ? 30 : 20;
+    board = std::vector<std::vector<cell_state>>(size, std::vector<cell_state>(size, cell_state::EMPTY));
+}
 
-void Board::displayBoard(bool isPlayer) {
+void Board::displayBoard() {
+    std::cout << "+" << std::string(size * 2, '-') << "+" << std::endl;
 
-
-    if (isPlayer) { 
-    std::cout << "+";
-    for (int col = 0; col < 30; ++col) {
-        std::cout << "--";
-    }
-    std::cout << "+" << std::endl; 
-    for (int row = 0; row < 30; ++row) {
+    for (int i = 0; i < size; ++i) {
         std::cout << "|";
-        for (int col = 0; col < 30; ++col) {
-            if (board[row][col] == EMPTY) { 
+        for (int j = 0; j < size; ++j) {
+            if (board[i][j] == cell_state::EMPTY) {
                 std::cout << "  ";
             } else {
-                std::cout << "  ";
+                std::cout << "██";
             }
         }
         std::cout << "|" << std::endl;
     }
 
-    std::cout << "+";
-    for (int col = 0; col < 30; ++col) {
-        std::cout << "--";
-    }
-    std::cout << "+" << std::endl;
-    
-    } else {
-        std::cout << "+";
-        for (int col = 0; col < 20; ++col) {
-            std::cout << "--";
-        }
-        std::cout << "+" << std::endl; 
-        for (int row = 0; row < 20; ++row) {
-            std::cout << "|";
-            for (int col = 0; col < 20; ++col) {
-                if (board[row][col] == EMPTY) { 
-                    std::cout << "  ";
-                } else {
-                    std::cout << "  ";
-                }
-            }
-            std::cout << "|" << std::endl;
-        }
-
-        std::cout << "+";
-        for (int col = 0; col < 20; ++col) {
-            std::cout << "--";
-        }
-        std::cout << "+" << std::endl;
-    }
+    std::cout << "+" << std::string(size * 2, '-') << "+" << std::endl << std::endl;
 }
+
