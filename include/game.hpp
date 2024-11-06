@@ -4,6 +4,7 @@
 #include "menu.hpp"
 #include "tile_manager.hpp"
 #include "board.hpp"
+#include "player.hpp"
 
 class Game {
 private:
@@ -11,6 +12,7 @@ private:
     TileManager tile_manager;
     Board board;
     int player_number;
+    std::vector<Player> players;
 
 public:
     Game();

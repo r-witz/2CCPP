@@ -1,5 +1,7 @@
 #include "../include/game.hpp"
 
+#include <iostream>
+
 Game::Game() {
     menu = Menu();
     tile_manager = TileManager();
@@ -22,6 +24,13 @@ void Game::start() {
     for (int i = 1; i <= player_number; i++) {
         player_color_options player_color = menu.playerColor(i);
         std::string player_name = menu.askPlayerName(i);
+        players.push_back(Player(i, player_name, player_color));
+    }
+
+    for (int i = 0; i < player_number; i++) {
+        std::cout << "Number: " << players[i].getNumber() << std::endl
+                  << "Name: " << players[i].getName() << std::endl
+                  << "Color: " << players[i].getColor() << "TEST" << "\033[0m" << std::endl;
     }
 
     tile_selection_options tile_selection_option = menu.tileSelection(1);
