@@ -1,5 +1,8 @@
 #include "../include/board.hpp"
 #include <iostream>
+#include <cmath>
+#include <random>
+#include <chrono>
 
 
 Board::Board() {
@@ -20,7 +23,15 @@ void Board::displayBoard() {
         for (int j = 0; j < size; ++j) {
             if (board[i][j] == cell_state::EMPTY) {
                 std::cout << "  ";
-            } else {
+            } else if (board[i][j] == cell_state::ROBBERY) {
+                std::cout << "\033[38;2;255;255;204m◖◗\033[0m";
+            } else if (board[i][j] == cell_state::STONE) {
+                std::cout << "\033[38;2;192;192;192m◖◗\033[0m";
+            }
+            else if (board[i][j] == cell_state::TILE_EXCHANGE) {
+                std::cout << "\033[38;2;51;153;102m◖◗\033[0m";
+            }
+             else {
                 std::cout << "██";
             }
         }
@@ -29,4 +40,76 @@ void Board::displayBoard() {
 
     std::cout << "+" << std::string(size * 2, '-') << "+" << std::endl << std::endl;
 }
+
+bool Board::verifyBonusPlace(int x, int y) {
+    if (x <= 0 || x >= size - 1 || y <= 0 || y >= size - 1) {
+        return false;
+    }
+
+    for (int row = -1; row <= 1; ++row) {
+        for (int col = -1; col <= 1; ++col) {
+            if (row == 0 && col == 0) {
+                continue;
+            }
+            
+            int rowx = x + row;
+            int coly = y + col;
+
+            if (rowx >= 0 && rowx < size && coly >= 0 && coly < size) {
+                if (board[rowx][coly] == cell_state::ROBBERY ||
+                    board[rowx][coly] == cell_state::STONE ||
+                    board[rowx][coly] == cell_state::TILE_EXCHANGE) {
+                    return false;
+                }
+            }
+        }
+    }
+
+    return true;
+}
+
+
+
+void Board::placeBonus(int number_player) {
+    int number_tile_exchange = static_cast<int>(std::round(1.5 * number_player));
+    int number_stone = static_cast<int>(std::round(0.5 * number_player));
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dist(0, size - 1);
+
+    for (int i = 0; i < number_player; ++i) {
+        int x, y;
+        do {
+            x = dist(gen);
+            y = dist(gen);
+        } while (!verifyBonusPlace(x, y));
+
+        board[x][y] = cell_state::ROBBERY;
+    }
+
+    for (int i = 0; i < number_stone; ++i) {
+        int x, y;
+        do {
+            x = dist(gen);
+            y = dist(gen);
+        } while (!verifyBonusPlace(x, y));
+
+        board[x][y] = cell_state::STONE;
+    }
+
+    for (int i = 0; i < number_tile_exchange; ++i) {
+        int x, y;
+        do {
+            x = dist(gen);
+            y = dist(gen);
+        } while (!verifyBonusPlace(x, y));
+
+        board[x][y] = cell_state::TILE_EXCHANGE;
+    }
+    
+    displayBoard();
+}
+
+
 

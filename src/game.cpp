@@ -56,7 +56,7 @@ void Game::start() {
             selected_tile.display();
             break;
         case tile_action_options::PLACE:
-            board.displayBoard();
+            board.placeBonus(player_number);
             break;
     }
 

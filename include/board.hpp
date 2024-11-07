@@ -15,6 +15,8 @@ public:
     Board(int number_player);
 
     void displayBoard();
+    bool verifyBonusPlace(int x, int y);
+    void placeBonus(int number_player);
 };
 
 #endif
