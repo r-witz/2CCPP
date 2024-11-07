@@ -79,7 +79,7 @@ Tile TileManager::getNextTile() {
     return nextTile;
 }
 
-Tile TileManager::chooseTile() {
+Tile TileManager::chooseTile(std::string selectedTileColor) {
     int offset = 1;
     int number_of_tiles = 5;
     int selected_tile = offset;
@@ -87,7 +87,7 @@ Tile TileManager::chooseTile() {
 
     do {
         std::cout << "Choose a tile :" << std::endl;
-        displayTiles(number_of_tiles, offset, selected_tile, "\033[38;2;255;0;0m");
+        displayTiles(number_of_tiles, offset, selected_tile, selectedTileColor);
         input = input_handler.getKeyPress();
 
         if (input == inputs::RIGHT) { if (++selected_tile >= offset + number_of_tiles) { selected_tile = offset; } }

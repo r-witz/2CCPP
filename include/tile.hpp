@@ -8,6 +8,7 @@ private:
     std::vector<std::vector<bool>> grid;
 
 public:
+    Tile();
     Tile(const std::vector<std::vector<bool>> &grid);
 
     std::vector<std::vector<bool>> getGrid();

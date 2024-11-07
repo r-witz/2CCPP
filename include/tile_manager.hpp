@@ -21,7 +21,7 @@ public:
     void randomizeTileQueue(int player_number);
     Tile getNextTile();
     void displayTiles(int number_of_tile, int offset, int selected_tile, std::string selectedTileColor);
-    Tile chooseTile();
+    Tile chooseTile(std::string selectedTileColor);
 };
 
 #endif

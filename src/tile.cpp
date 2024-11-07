@@ -3,6 +3,10 @@
 #include <algorithm>
 #include <iostream>
 
+Tile::Tile() {
+    this->grid = std::vector<std::vector<bool>>(1, std::vector<bool>(1, true));
+}
+
 Tile::Tile(const std::vector<std::vector<bool>> &grid) {
     this->grid = grid;
 }

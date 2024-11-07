@@ -39,7 +39,7 @@ void Game::start() {
         case tile_selection_options::TAKE:
             break;
         case tile_selection_options::EXCHANGE:
-            tile_manager.chooseTile();
+            tile_manager.chooseTile(players[0].getColor());
             break;
     }
 
