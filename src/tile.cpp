@@ -5,14 +5,34 @@
 
 Tile::Tile() {
     this->grid = std::vector<std::vector<bool>>(1, std::vector<bool>(1, true));
+    this->owner_id = -1;
+    this->cluster_id = -1;
 }
 
-Tile::Tile(const std::vector<std::vector<bool>> &grid) {
+Tile::Tile(const std::vector<std::vector<bool>> &grid, int owner_id, int cluster_id) {
     this->grid = grid;
+    this->owner_id = owner_id;
+    this->cluster_id = cluster_id;
 }
 
 std::vector<std::vector<bool>> Tile::getGrid() {
     return grid;
+}
+
+int Tile::getOwnerId() {
+    return owner_id;
+}
+
+void Tile::setOwnerId(int id) {
+    owner_id = id;
+}
+
+int Tile::getClusterId() {
+    return cluster_id;
+}
+
+void Tile::setClusterId(int id) {
+    cluster_id = id;
 }
 
 void Tile::flip() {

@@ -2,18 +2,20 @@
 #include <iostream>
 #include <cmath>
 #include <random>
-#include <chrono>
-
 
 Board::Board() {
     size = 30;
     board = std::vector<std::vector<cell_state>>(size, std::vector<cell_state>(size, cell_state::EMPTY));
+    tileMapping = std::vector<std::vector<Tile*>>(size, std::vector<Tile*>(size, nullptr));
 }
 
-Board::Board(int number_player) {
+Board::Board(int number_player, std::vector<Player> &players) {
     size = number_player > 4 ? 30 : 20;
     board = std::vector<std::vector<cell_state>>(size, std::vector<cell_state>(size, cell_state::EMPTY));
+    tileMapping = std::vector<std::vector<Tile*>>(size, std::vector<Tile*>(size, nullptr));
+    this->players = players;
 }
+
 
 void Board::displayBoard() {
     std::cout << "+" << std::string(size * 2, '-') << "+" << std::endl;
@@ -27,12 +29,12 @@ void Board::displayBoard() {
                 std::cout << "\033[38;2;255;255;204m◖◗\033[0m";
             } else if (board[i][j] == cell_state::STONE) {
                 std::cout << "\033[38;2;192;192;192m◖◗\033[0m";
-            }
-            else if (board[i][j] == cell_state::TILE_EXCHANGE) {
+            } else if (board[i][j] == cell_state::TILE_EXCHANGE) {
                 std::cout << "\033[38;2;51;153;102m◖◗\033[0m";
-            }
-             else {
-                std::cout << "██";
+            } else {
+                int player_index = static_cast<int>(board[i][j]) - static_cast<int>(cell_state::P1);
+                std::string player_color = players[player_index].getColor();
+                std::cout << player_color << "██" << "\033[0m";
             }
         }
         std::cout << "|" << std::endl;
@@ -40,6 +42,7 @@ void Board::displayBoard() {
 
     std::cout << "+" << std::string(size * 2, '-') << "+" << std::endl << std::endl;
 }
+
 
 bool Board::verifyBonusPlace(int x, int y) {
     if (x <= 0 || x >= size - 1 || y <= 0 || y >= size - 1) {
@@ -67,8 +70,6 @@ bool Board::verifyBonusPlace(int x, int y) {
 
     return true;
 }
-
-
 
 void Board::placeBonus(int number_player) {
     int number_tile_exchange = static_cast<int>(std::round(1.5 * number_player));
@@ -107,9 +108,19 @@ void Board::placeBonus(int number_player) {
 
         board[x][y] = cell_state::TILE_EXCHANGE;
     }
-    
-    displayBoard();
 }
 
+void Board::placeTile(Tile *tile, int row, int col) {
+    for (int i=0; i < tile->getGrid().size(); i++) {
+        for (int j=0; j < tile->getGrid()[0].size(); j++) {
+            if (tile->getGrid()[i][j]) {
+                board[row+i][col+j] = static_cast<cell_state>(tile->getOwnerId());
+                tileMapping[row+i][col+j] = tile;
+            }
+        }
+    }
+}
 
-
+Tile* Board::getTileAt(int row, int col) {
+    return tileMapping[row][col];
+}
