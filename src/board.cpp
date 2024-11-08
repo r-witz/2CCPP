@@ -16,20 +16,37 @@ Board::Board(int number_player, std::vector<Player> &players) {
     this->players = players;
 }
 
-void Board::displayBoard() {
+int Board::getSize() { return size; }
+
+void Board::displayBoard(Tile* previewTile, int previewRow, int previewCol, int currentPlayer, bool canPlace) {
     std::cout << "+" << std::string(size * 2, '-') << "+" << std::endl;
 
     for (int i = 0; i < size; ++i) {
         std::cout << "|";
         for (int j = 0; j < size; ++j) {
-            if (board[i][j] == cell_state::EMPTY) { std::cout << "  "; }
-            else if (board[i][j] == cell_state::ROBBERY) { std::cout << "\033[38;2;255;255;204m◖◗\033[0m"; }
-            else if (board[i][j] == cell_state::STONE) { std::cout << "\033[38;2;192;192;192m◖◗\033[0m"; }
-            else if (board[i][j] == cell_state::TILE_EXCHANGE) { std::cout << "\033[38;2;51;153;102m◖◗\033[0m"; }
+            bool inPreview = false;
+            if (previewTile == nullptr) { inPreview = false; }
             else {
-                int player_index = static_cast<int>(board[i][j]) - static_cast<int>(cell_state::P1);
-                std::string player_color = players[player_index].getColor();
-                std::cout << player_color << "██" << "\033[0m";
+                for (int x = 0; x < previewTile->getGrid().size(); ++x) {
+                    for (int y = 0; y < previewTile->getGrid()[0].size(); ++y) {
+                        if (previewTile->getGrid()[x][y] && i == previewRow + x && j == previewCol + y) { inPreview = true; }
+                    }
+                }
+
+            }
+
+            if (inPreview) { std::cout << (canPlace ? players[currentPlayer-1].getColor() : "\033[0m") << "██" << "\033[0m"; } 
+            else {
+                switch (board[i][j]) {
+                    case cell_state::EMPTY: std::cout << "  "; break;
+                    case cell_state::ROBBERY: std::cout << "\033[38;2;255;255;204m◖◗\033[0m"; break;
+                    case cell_state::STONE: std::cout << "\033[38;2;192;192;192m◖◗\033[0m"; break;
+                    case cell_state::TILE_EXCHANGE: std::cout << "\033[38;2;51;153;102m◖◗\033[0m"; break;
+                    default:
+                        int player_index = static_cast<int>(board[i][j]) - static_cast<int>(cell_state::P1);
+                        std::string player_color = players[player_index].getColor();
+                        std::cout << player_color << "██" << "\033[0m";
+                }
             }
         }
         std::cout << "|" << std::endl;
@@ -101,6 +118,41 @@ void Board::placeBonus(int number_player) {
 
         board[x][y] = cell_state::TILE_EXCHANGE;
     }
+}
+
+bool Board::isTouchingSamePlayerTile(int boardRow, int boardCol, int ownerId) {
+    for (int dx = -1; dx <= 1; ++dx) {
+        for (int dy = -1; dy <= 1; ++dy) {
+            int neighborRow = boardRow + dx;
+            int neighborCol = boardCol + dy;
+
+            if (!(neighborRow >= 0 && neighborRow < size && neighborCol >= 0 && neighborCol < size)) { return false; }
+            if (tileMapping[neighborRow][neighborCol] && tileMapping[neighborRow][neighborCol]->getOwnerId() == ownerId) { return true; }
+        }
+    }
+
+    return false;
+}
+
+bool Board::canPlaceTile(Tile* tile, int row, int col, bool firstRound) {
+    std::vector<std::vector<bool>> tileGrid = tile->getGrid();
+    int ownerId = tile->getOwnerId();
+    bool touchesSamePlayerTile = false;
+
+    for (int i = 0; i < tileGrid.size(); ++i) {
+        for (int j = 0; j < tileGrid[i].size(); ++j) {
+            if (!tileGrid[i][j]) { continue; }
+            int boardRow = row + i;
+            int boardCol = col + j;
+
+            if (boardRow < 0 || boardRow >= size || boardCol < 0 || boardCol >= size) { return false; }
+            if (board[boardRow][boardCol] != cell_state::EMPTY) { return false; }
+
+            if (!firstRound) { touchesSamePlayerTile = isTouchingSamePlayerTile(boardRow, boardCol, ownerId); }
+        }
+    }
+
+    return firstRound || touchesSamePlayerTile;
 }
 
 void Board::placeTile(Tile *tile, int row, int col) {

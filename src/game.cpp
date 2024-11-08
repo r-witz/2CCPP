@@ -6,6 +6,42 @@ Game::Game() {
     board = Board();
 }
 
+void Game::playerPlaceTile(Tile* tile, int playerIndex, bool firstRound) {
+    InputHandler inputHandler;
+    int row = 0, col = 0;
+    bool canPlace = board.canPlaceTile(tile, row, col, firstRound);
+
+    while (true) {
+        board.displayBoard(tile, row, col, playerIndex, canPlace);
+
+        inputs key = inputHandler.getKeyPress();
+        switch (key) {
+            case UP:
+                if (row > 0) --row;
+                break;
+            case DOWN:
+                if (row + tile->getGrid().size() < board.getSize()) ++row;
+                break;
+            case LEFT:
+                if (col > 0) --col;
+                break;
+            case RIGHT:
+                if (col + tile->getGrid()[0].size() < board.getSize()) ++col;
+                break;
+            case ENTER:
+                if (canPlace) {
+                    board.placeTile(tile, row, col);
+                    return;
+                }
+                break;
+            default:
+                break;
+        }
+
+        canPlace = board.canPlaceTile(tile, row, col, firstRound);
+    }
+}
+
 void Game::start() {
     menu.displayTitle();
     main_menu_options main_menu_option = menu.mainMenu();
@@ -51,15 +87,10 @@ void Game::start() {
             break;
         case tile_action_options::PLACE:
             board.placeBonus(player_number);
-            board.placeTile(&selected_tile, 0, 0);
-            board.displayBoard();
+            playerPlaceTile(&selected_tile, players[0].getId(), true);
             break;
     }
 
-    selected_tile = tile_manager.getNextTile();
-    selected_tile.setOwnerId(players[1].getId());
-    board.placeTile(&selected_tile, 5, 0);
     board.displayBoard();
-
     menu.displayWinner(1);
 };

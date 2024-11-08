@@ -15,14 +15,19 @@ protected:
     std::vector<std::vector<Tile*>> tileMapping;
     std::vector<Player> players;
 
+    bool isTouchingSamePlayerTile(int boardRow, int boardCol, int ownerId);
+
 public:
     Board();
     Board(int number_player, std::vector<Player> &players);
 
-    void displayBoard();
+    int getSize();
+
+    void displayBoard(Tile* previewTile=nullptr, int previewRow=-1, int previewCol=-1, int currentPlayer=-1, bool canPlace=false);
     bool verifyBonusPlace(int x, int y);
     void placeBonus(int number_player);
 
+    bool canPlaceTile(Tile* tile, int row, int col, bool firstRound);
     void placeTile(Tile *tile, int row, int col);
     Tile* getTileAt(int x, int y);
 };

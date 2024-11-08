@@ -14,6 +14,8 @@ private:
     int player_number;
     std::vector<Player> players;
 
+    void playerPlaceTile(Tile* tile, int playerIndex, bool firstRound);
+
 public:
     Game();
 
