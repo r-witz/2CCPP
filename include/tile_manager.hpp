@@ -6,22 +6,23 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
 class TileManager {
 private:
     InputHandler input_handler;
-    std::vector<Tile> allTiles;
-    std::vector<Tile> tileQueue;
+    std::vector<std::shared_ptr<Tile>> allTiles;
+    std::vector<std::shared_ptr<Tile>> tileQueue;
 
-    std::vector<Tile> readTileFile(const std::string filePath);
+    std::vector<std::shared_ptr<Tile>> readTileFile(const std::string filePath);
 
 public:
     TileManager();
 
     void randomizeTileQueue(int player_number);
-    Tile getNextTile();
     void displayTiles(int number_of_tile, int offset, int selected_tile, std::string selectedTileColor);
-    Tile chooseTile(std::string selectedTileColor);
+    std::shared_ptr<Tile> getNextTile();
+    std::shared_ptr<Tile> chooseTile(std::string selectedTileColor);
 };
 
 #endif

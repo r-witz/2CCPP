@@ -10,15 +10,16 @@ TileManager::TileManager() {
     allTiles = readTileFile("data/tiles.txt");
 }
 
-std::vector<Tile> TileManager::readTileFile(const std::string filePath) {
+std::vector<std::shared_ptr<Tile>> TileManager::readTileFile(const std::string filePath) {
     std::ifstream file(filePath);
-    std::vector<Tile> tiles;
+    std::vector<std::shared_ptr<Tile>> tiles;
     std::vector<std::vector<bool>> currentTileGrid;
     std::string line;
 
     while (std::getline(file, line)) {
         if (line.empty()) {
-            tiles.push_back(Tile(currentTileGrid));
+            std::shared_ptr<Tile> tilePtr = std::make_shared<Tile>(currentTileGrid);
+            tiles.push_back(tilePtr);
             currentTileGrid.clear();
         } else {
             std::vector<bool> row;
@@ -38,12 +39,12 @@ void TileManager::displayTiles(int number_of_tile, int offset, int selected_tile
 
     int maxRows = 0;
     for (int i = offset; i < endIndex; ++i) {
-        maxRows = std::max(maxRows, static_cast<int>(tileQueue[i].getGrid().size()));
+        maxRows = std::max(maxRows, static_cast<int>(tileQueue[i]->getGrid().size()));
     }
 
     for (int row = 0; row < maxRows; ++row) {
         for (int i = offset; i < endIndex; ++i) {
-            const auto& grid = tileQueue[i].getGrid();
+            const auto& grid = tileQueue[i]->getGrid();
 
             if (row < grid.size()) {
                 if (i == selected_tile) {
@@ -70,16 +71,19 @@ void TileManager::randomizeTileQueue(int player_number) {
     std::mt19937 gen(rd());
     std::shuffle(allTiles.begin(), allTiles.end(), gen);
 
-    tileQueue.insert(tileQueue.end(), allTiles.begin(), allTiles.begin() + totalTiles);
+    for (int i = 0; i < totalTiles; ++i) {
+        std::shared_ptr<Tile> tilePtr = allTiles[i];
+        tileQueue.push_back(tilePtr);
+    }
 }
 
-Tile TileManager::getNextTile() {
-    Tile nextTile = tileQueue[0];
+std::shared_ptr<Tile> TileManager::getNextTile() {
+    std::shared_ptr<Tile> nextTile = tileQueue[0];
     tileQueue.erase(tileQueue.begin());
     return nextTile;
 }
 
-Tile TileManager::chooseTile(std::string selectedTileColor) {
+std::shared_ptr<Tile> TileManager::chooseTile(std::string selectedTileColor) {
     int offset = 1;
     int number_of_tiles = 5;
     int selected_tile = offset;
@@ -94,7 +98,7 @@ Tile TileManager::chooseTile(std::string selectedTileColor) {
         else if (input == inputs::LEFT) { if (--selected_tile < offset) { selected_tile = offset + number_of_tiles - 1; } }
     } while (input != inputs::ENTER);
 
-    Tile chosenTile = tileQueue[selected_tile];
+    std::shared_ptr<Tile> chosenTile = tileQueue[selected_tile];
     std::rotate(tileQueue.begin(), tileQueue.begin() + selected_tile - 1, tileQueue.end());
     tileQueue.erase(tileQueue.begin());
 

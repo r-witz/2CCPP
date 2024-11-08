@@ -11,6 +11,7 @@ private:
 
 public:
     Tile();
+    Tile(const Tile& other); 
     Tile(const std::vector<std::vector<bool>> &grid, int owner_id = -1, int cluster_id = -1);
 
     std::vector<std::vector<bool>> getGrid();

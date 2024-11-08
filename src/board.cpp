@@ -6,33 +6,31 @@
 Board::Board() {
     size = 30;
     board = std::vector<std::vector<cell_state>>(size, std::vector<cell_state>(size, cell_state::EMPTY));
-    tileMapping = std::vector<std::vector<Tile*>>(size, std::vector<Tile*>(size, nullptr));
+    tileMapping = std::vector<std::vector<std::shared_ptr<Tile>>>(size, std::vector<std::shared_ptr<Tile>>(size, nullptr));
 }
 
 Board::Board(int number_player, std::vector<Player> &players) {
     size = number_player > 4 ? 30 : 20;
     board = std::vector<std::vector<cell_state>>(size, std::vector<cell_state>(size, cell_state::EMPTY));
-    tileMapping = std::vector<std::vector<Tile*>>(size, std::vector<Tile*>(size, nullptr));
+    tileMapping = std::vector<std::vector<std::shared_ptr<Tile>>>(size, std::vector<std::shared_ptr<Tile>>(size, nullptr));
     this->players = players;
 }
 
 int Board::getSize() { return size; }
 
-void Board::displayBoard(Tile* previewTile, int previewRow, int previewCol, int currentPlayer, bool canPlace) {
+void Board::displayBoard(std::shared_ptr<Tile> previewTile, int previewRow, int previewCol, int currentPlayer, bool canPlace) {
     std::cout << "+" << std::string(size * 2, '-') << "+" << std::endl;
 
     for (int i = 0; i < size; ++i) {
         std::cout << "|";
         for (int j = 0; j < size; ++j) {
             bool inPreview = false;
-            if (previewTile == nullptr) { inPreview = false; }
-            else {
+            if (previewTile != nullptr) {
                 for (int x = 0; x < previewTile->getGrid().size(); ++x) {
                     for (int y = 0; y < previewTile->getGrid()[0].size(); ++y) {
                         if (previewTile->getGrid()[x][y] && i == previewRow + x && j == previewCol + y) { inPreview = true; }
                     }
                 }
-
             }
 
             if (inPreview) { std::cout << (canPlace ? players[currentPlayer-1].getColor() : "\033[0m") << "██" << "\033[0m"; } 
@@ -121,20 +119,42 @@ void Board::placeBonus(int number_player) {
 }
 
 bool Board::isTouchingSamePlayerTile(int boardRow, int boardCol, int ownerId) {
-    for (int dx = -1; dx <= 1; ++dx) {
-        for (int dy = -1; dy <= 1; ++dy) {
-            int neighborRow = boardRow + dx;
-            int neighborCol = boardCol + dy;
+    const int directions[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
-            if (!(neighborRow >= 0 && neighborRow < size && neighborCol >= 0 && neighborCol < size)) { return false; }
-            if (tileMapping[neighborRow][neighborCol] && tileMapping[neighborRow][neighborCol]->getOwnerId() == ownerId) { return true; }
+    for (const auto& dir : directions) {
+        int neighborRow = boardRow + dir[0];
+        int neighborCol = boardCol + dir[1];
+
+        if (neighborRow >= 0 && neighborRow < size && neighborCol >= 0 && neighborCol < size) {
+            std::shared_ptr<Tile> neighborTile = tileMapping[neighborRow][neighborCol];
+            if (neighborTile && neighborTile->getOwnerId() == ownerId) {
+                return true;
+            }
         }
     }
 
     return false;
 }
 
-bool Board::canPlaceTile(Tile* tile, int row, int col, bool firstRound) {
+bool Board::isTouchingOtherPlayerTile(int boardRow, int boardCol, int ownerId) {
+    const int directions[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+
+    for (const auto& dir : directions) {
+        int neighborRow = boardRow + dir[0];
+        int neighborCol = boardCol + dir[1];
+
+        if (neighborRow >= 0 && neighborRow < size && neighborCol >= 0 && neighborCol < size) {
+            std::shared_ptr<Tile> neighborTile = tileMapping[neighborRow][neighborCol];
+            if (neighborTile && neighborTile->getOwnerId() != ownerId) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+bool Board::canPlaceTile(std::shared_ptr<Tile> tile, int row, int col, bool firstRound) {
     std::vector<std::vector<bool>> tileGrid = tile->getGrid();
     int ownerId = tile->getOwnerId();
     bool touchesSamePlayerTile = false;
@@ -142,30 +162,46 @@ bool Board::canPlaceTile(Tile* tile, int row, int col, bool firstRound) {
     for (int i = 0; i < tileGrid.size(); ++i) {
         for (int j = 0; j < tileGrid[i].size(); ++j) {
             if (!tileGrid[i][j]) { continue; }
+
             int boardRow = row + i;
             int boardCol = col + j;
 
-            if (boardRow < 0 || boardRow >= size || boardCol < 0 || boardCol >= size) { return false; }
-            if (board[boardRow][boardCol] != cell_state::EMPTY) { return false; }
+            if (boardRow < 0 || boardRow >= size || boardCol < 0 || boardCol >= size) {
+                return false;
+            }
 
-            if (!firstRound) { touchesSamePlayerTile = isTouchingSamePlayerTile(boardRow, boardCol, ownerId); }
+            if (board[boardRow][boardCol] != cell_state::EMPTY &&
+                board[boardRow][boardCol] != cell_state::ROBBERY &&
+                board[boardRow][boardCol] != cell_state::STONE &&
+                board[boardRow][boardCol] != cell_state::TILE_EXCHANGE) {
+                return false;
+            }
+
+            if (isTouchingOtherPlayerTile(boardRow, boardCol, ownerId)) {
+                return false;
+            }
+
+            if (!firstRound && isTouchingSamePlayerTile(boardRow, boardCol, ownerId)) {
+                touchesSamePlayerTile = true;
+            }
         }
     }
 
     return firstRound || touchesSamePlayerTile;
 }
 
-void Board::placeTile(Tile *tile, int row, int col) {
-    for (int i=0; i < tile->getGrid().size(); i++) {
-        for (int j=0; j < tile->getGrid()[0].size(); j++) {
+void Board::placeTile(std::shared_ptr<Tile> tile, int row, int col) {
+    for (int i = 0; i < tile->getGrid().size(); i++) {
+        for (int j = 0; j < tile->getGrid()[0].size(); j++) {
             if (tile->getGrid()[i][j]) {
-                board[row+i][col+j] = static_cast<cell_state>(tile->getOwnerId());
-                tileMapping[row+i][col+j] = tile;
+                board[row + i][col + j] = static_cast<cell_state>(tile->getOwnerId());
+                tileMapping[row + i][col + j] = tile;
             }
         }
     }
 }
 
-Tile* Board::getTileAt(int row, int col) {
+
+std::shared_ptr<Tile> Board::getTileAt(int row, int col) {
     return tileMapping[row][col];
 }

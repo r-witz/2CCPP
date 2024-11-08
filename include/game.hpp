@@ -14,7 +14,7 @@ private:
     int player_number;
     std::vector<Player> players;
 
-    void playerPlaceTile(Tile* tile, int playerIndex, bool firstRound);
+    void playerPlaceTile(std::shared_ptr<Tile> tile, int playerIndex, bool firstRound);
 
 public:
     Game();

@@ -6,7 +6,7 @@ Game::Game() {
     board = Board();
 }
 
-void Game::playerPlaceTile(Tile* tile, int playerIndex, bool firstRound) {
+void Game::playerPlaceTile(std::shared_ptr<Tile> tile, int playerIndex, bool firstRound) {
     InputHandler inputHandler;
     int row = 0, col = 0;
     bool canPlace = board.canPlaceTile(tile, row, col, firstRound);
@@ -52,7 +52,6 @@ void Game::start() {
     }
 
     player_number = menu.askPlayerNumber();
-    tile_manager.randomizeTileQueue(player_number);
 
     for (int i = 1; i <= player_number; i++) {
         player_color_options player_color = menu.playerColor(i);
@@ -60,37 +59,20 @@ void Game::start() {
         players.push_back(Player(i, player_name, player_color));
     }
 
+    tile_manager.randomizeTileQueue(player_number);
     board = Board(player_number, players);
 
-    tile_selection_options tile_selection_option = menu.tileSelection(1);
-    Tile selected_tile = tile_manager.getNextTile();
-    switch (tile_selection_option) {
-        case tile_selection_options::TAKE:
-            break;
-        case tile_selection_options::EXCHANGE:
-            tile_manager.chooseTile(players[0].getColor());
-            break;
+    for (int i = 0; i < player_number; ++i) {
+        std::shared_ptr<Tile> startingTile = std::make_shared<Tile>();
+        startingTile->setOwnerId(players[i].getId());
+        playerPlaceTile(startingTile, players[i].getId(), true);
     }
 
-    selected_tile.display();
-    selected_tile.setOwnerId(players[0].getId());
-
-    tile_action_options tile_action_option = menu.tileAction();
-    switch (tile_action_option) {
-        case tile_action_options::FLIP:
-            selected_tile.flip();
-            selected_tile.display();
-            break;
-        case tile_action_options::ROTATE:
-            selected_tile.rotate();
-            selected_tile.display();
-            break;
-        case tile_action_options::PLACE:
-            board.placeBonus(player_number);
-            playerPlaceTile(&selected_tile, players[0].getId(), true);
-            break;
+    for (int round = 2; round <= 9; ++round) {
+        for (int i = 0; i < player_number; ++i) {
+            std::shared_ptr<Tile> selectedTile = tile_manager.getNextTile();
+            selectedTile->setOwnerId(players[i].getId());
+            playerPlaceTile(selectedTile, players[i].getId(), false);
+        }
     }
-
-    board.displayBoard();
-    menu.displayWinner(1);
-};
+}
