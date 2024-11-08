@@ -16,22 +16,17 @@ Board::Board(int number_player, std::vector<Player> &players) {
     this->players = players;
 }
 
-
 void Board::displayBoard() {
     std::cout << "+" << std::string(size * 2, '-') << "+" << std::endl;
 
     for (int i = 0; i < size; ++i) {
         std::cout << "|";
         for (int j = 0; j < size; ++j) {
-            if (board[i][j] == cell_state::EMPTY) {
-                std::cout << "  ";
-            } else if (board[i][j] == cell_state::ROBBERY) {
-                std::cout << "\033[38;2;255;255;204m◖◗\033[0m";
-            } else if (board[i][j] == cell_state::STONE) {
-                std::cout << "\033[38;2;192;192;192m◖◗\033[0m";
-            } else if (board[i][j] == cell_state::TILE_EXCHANGE) {
-                std::cout << "\033[38;2;51;153;102m◖◗\033[0m";
-            } else {
+            if (board[i][j] == cell_state::EMPTY) { std::cout << "  "; }
+            else if (board[i][j] == cell_state::ROBBERY) { std::cout << "\033[38;2;255;255;204m◖◗\033[0m"; }
+            else if (board[i][j] == cell_state::STONE) { std::cout << "\033[38;2;192;192;192m◖◗\033[0m"; }
+            else if (board[i][j] == cell_state::TILE_EXCHANGE) { std::cout << "\033[38;2;51;153;102m◖◗\033[0m"; }
+            else {
                 int player_index = static_cast<int>(board[i][j]) - static_cast<int>(cell_state::P1);
                 std::string player_color = players[player_index].getColor();
                 std::cout << player_color << "██" << "\033[0m";
@@ -39,10 +34,8 @@ void Board::displayBoard() {
         }
         std::cout << "|" << std::endl;
     }
-
     std::cout << "+" << std::string(size * 2, '-') << "+" << std::endl << std::endl;
 }
-
 
 bool Board::verifyBonusPlace(int x, int y) {
     if (x <= 0 || x >= size - 1 || y <= 0 || y >= size - 1) {
@@ -54,7 +47,7 @@ bool Board::verifyBonusPlace(int x, int y) {
             if (row == 0 && col == 0) {
                 continue;
             }
-            
+
             int rowx = x + row;
             int coly = y + col;
 

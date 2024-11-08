@@ -7,14 +7,14 @@
 
 class Player {
 private:
-    int number;
+    int id;
     std::string name;
     std::string color;
 
 public:
-    Player(int number, std::string name, enum player_color_options color);
+    Player(int id, std::string name, enum player_color_options color);
 
-    int getNumber();
+    int getId();
     std::string getName();
     std::string getColor();
 };

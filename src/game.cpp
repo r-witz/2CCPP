@@ -37,7 +37,7 @@ void Game::start() {
     }
 
     selected_tile.display();
-    selected_tile.setOwnerId(players[0].getNumber());
+    selected_tile.setOwnerId(players[0].getId());
 
     tile_action_options tile_action_option = menu.tileAction();
     switch (tile_action_option) {
@@ -57,7 +57,7 @@ void Game::start() {
     }
 
     selected_tile = tile_manager.getNextTile();
-    selected_tile.setOwnerId(2);
+    selected_tile.setOwnerId(players[1].getId());
     board.placeTile(&selected_tile, 5, 0);
     board.displayBoard();
 

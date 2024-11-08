@@ -1,7 +1,7 @@
 #include "../include/player.hpp"
 
-Player::Player(int number, std::string name, enum player_color_options color) {
-    this->number = number;
+Player::Player(int id, std::string name, enum player_color_options color) {
+    this->id = id;
     this->name = name;
 
     switch (color) {
@@ -17,8 +17,8 @@ Player::Player(int number, std::string name, enum player_color_options color) {
     }
 }
 
-int Player::getNumber() {
-    return number;
+int Player::getId() {
+    return id;
 }
 
 std::string Player::getName() {
