@@ -99,7 +99,7 @@ std::shared_ptr<Tile> TileManager::chooseTile(std::string selectedTileColor) {
     } while (input != inputs::ENTER);
 
     std::shared_ptr<Tile> chosenTile = tileQueue[selected_tile];
-    std::rotate(tileQueue.begin(), tileQueue.begin() + selected_tile - 1, tileQueue.end());
+    std::rotate(tileQueue.begin(), tileQueue.begin() + selected_tile, tileQueue.end());
     tileQueue.erase(tileQueue.begin());
 
     return chosenTile;

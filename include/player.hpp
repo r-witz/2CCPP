@@ -14,9 +14,9 @@ private:
 public:
     Player(int id, std::string name, enum player_color_options color);
 
-    int getId();
-    std::string getName();
-    std::string getColor();
+    int getId() const;
+    std::string getName() const;
+    std::string getColor() const;
 };
 
 #endif

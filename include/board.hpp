@@ -14,13 +14,13 @@ protected:
     int size;
     std::vector<std::vector<cell_state>> board;
     std::vector<std::vector<std::shared_ptr<Tile>>> tileMapping;
-    std::vector<Player> players;
+    std::vector<std::shared_ptr<Player>> players;
 
     bool isTouchingPlayerTile(int boardRow, int boardCol, int ownerId, bool samePlayer);
 
 public:
     Board();
-    Board(int number_player, std::vector<Player> &players);
+    Board(int number_player, std::vector<std::shared_ptr<Player>> players);
 
     int getSize();
 

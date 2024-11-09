@@ -1,9 +1,103 @@
 #include "../include/game.hpp"
 
+#include <iostream>
+
 Game::Game() {
     menu = Menu();
     tile_manager = TileManager();
     board = Board();
+}
+
+void Game::start() {
+    if (!displayMainMenu()) {
+        return;
+    }
+
+    initializePlayers();
+    setupBoardAndTiles();
+    playRounds(9);
+}
+
+bool Game::displayMainMenu() {
+    menu.displayTitle();
+    main_menu_options main_menu_option = menu.mainMenu();
+    return main_menu_option == main_menu_options::PLAY;
+}
+
+void Game::initializePlayers() {
+    player_number = menu.askPlayerNumber();
+    for (int i = 1; i <= player_number; ++i) {
+        player_color_options player_color = menu.playerColor(i);
+        std::string player_name = menu.askPlayerName(i);
+        auto player = std::make_shared<Player>(i, player_name, player_color);
+        players.push_back(player);
+    }
+}
+
+void Game::setupBoardAndTiles() {
+    tile_manager.randomizeTileQueue(player_number);
+    board = Board(player_number, players);
+
+    for (auto& player : players) {
+        std::shared_ptr<Tile> startingTile = std::make_shared<Tile>();
+        startingTile->setOwnerId(player->getId());
+        displayPlayerTurn(player, 0);
+        playerPlaceTile(startingTile, player->getId(), true);
+    }
+}
+
+void Game::playRounds(int totalRounds) {
+    for (int round = 1; round <= totalRounds; ++round) {
+        for (auto& player : players) {
+            playTurn(player, round);
+        }
+    }
+}
+
+void Game::playTurn(std::shared_ptr<Player> player, int round) {
+    displayPlayerTurn(player, round);
+    std::cout << "Current Tile:" << std::endl;
+    tile_manager.displayTiles(1, 0, -1, "");
+    std::cout << "Next Tiles:" << std::endl;
+    tile_manager.displayTiles(5, 1, -1, "");
+    board.displayBoard();
+
+    std::shared_ptr<Tile> selectedTile = selectTile(player);
+    selectedTile->setOwnerId(player->getId());
+    placeTile(selectedTile, player);
+}
+
+void Game::displayPlayerTurn(const std::shared_ptr<Player> player, int round) const {
+    std::cout << player->getColor() << "Player " << player->getId() << " (" << player->getName() << ")" 
+              << " - Round " << round << ":" << "\033[0m" << std::endl;
+}
+
+std::shared_ptr<Tile> Game::selectTile(const std::shared_ptr<Player> player) {
+    std::shared_ptr<Tile> selectedTile;
+    tile_selection_options tile_selection = menu.tileSelection(0);
+
+    switch (tile_selection) {
+        case tile_selection_options::TAKE: selectedTile = tile_manager.getNextTile(); break;
+        case tile_selection_options::EXCHANGE: selectedTile = tile_manager.chooseTile(player->getColor()); break;
+    }
+
+    return selectedTile;
+}
+
+void Game::placeTile(std::shared_ptr<Tile> &selectedTile, const std::shared_ptr<Player> player) {
+    tile_action_options action;
+
+    do {
+        std::cout << "Tile to place:" << std::endl;
+        selectedTile->display();
+        action = menu.tileAction();
+
+        switch (action) {
+            case tile_action_options::FLIP: selectedTile->flip(); break;
+            case tile_action_options::ROTATE: selectedTile->rotate(); break;
+            case tile_action_options::PLACE: playerPlaceTile(selectedTile, player->getId(), false); break;
+        }
+    } while (action != tile_action_options::PLACE);
 }
 
 void Game::playerPlaceTile(std::shared_ptr<Tile> tile, int playerIndex, bool firstRound) {
@@ -16,63 +110,14 @@ void Game::playerPlaceTile(std::shared_ptr<Tile> tile, int playerIndex, bool fir
 
         inputs key = inputHandler.getKeyPress();
         switch (key) {
-            case UP:
-                if (row > 0) --row;
-                break;
-            case DOWN:
-                if (row + tile->getGrid().size() < board.getSize()) ++row;
-                break;
-            case LEFT:
-                if (col > 0) --col;
-                break;
-            case RIGHT:
-                if (col + tile->getGrid()[0].size() < board.getSize()) ++col;
-                break;
-            case ENTER:
-                if (canPlace) {
-                    board.placeTile(tile, row, col);
-                    return;
-                }
-                break;
-            default:
-                break;
+            case UP: if (row > 0) --row; break;
+            case DOWN: if (row + tile->getGrid().size() < board.getSize()) ++row; break;
+            case LEFT: if (col > 0) --col; break;
+            case RIGHT: if (col + tile->getGrid()[0].size() < board.getSize()) ++col; break;
+            case ENTER: if (canPlace) { board.placeTile(tile, row, col); return; } break;
+            default: break;
         }
 
         canPlace = board.canPlaceTile(tile, row, col, firstRound);
-    }
-}
-
-void Game::start() {
-    menu.displayTitle();
-    main_menu_options main_menu_option = menu.mainMenu();
-
-    switch (main_menu_option) {
-        case main_menu_options::PLAY: break;
-        case main_menu_options::EXIT: return;
-    }
-
-    player_number = menu.askPlayerNumber();
-
-    for (int i = 1; i <= player_number; i++) {
-        player_color_options player_color = menu.playerColor(i);
-        std::string player_name = menu.askPlayerName(i);
-        players.push_back(Player(i, player_name, player_color));
-    }
-
-    tile_manager.randomizeTileQueue(player_number);
-    board = Board(player_number, players);
-
-    for (int i = 0; i < player_number; ++i) {
-        std::shared_ptr<Tile> startingTile = std::make_shared<Tile>();
-        startingTile->setOwnerId(players[i].getId());
-        playerPlaceTile(startingTile, players[i].getId(), true);
-    }
-
-    for (int round = 2; round <= 9; ++round) {
-        for (int i = 0; i < player_number; ++i) {
-            std::shared_ptr<Tile> selectedTile = tile_manager.getNextTile();
-            selectedTile->setOwnerId(players[i].getId());
-            playerPlaceTile(selectedTile, players[i].getId(), false);
-        }
     }
 }

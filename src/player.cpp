@@ -17,14 +17,6 @@ Player::Player(int id, std::string name, enum player_color_options color) {
     }
 }
 
-int Player::getId() {
-    return id;
-}
-
-std::string Player::getName() {
-    return name;
-}
-
-std::string Player::getColor() {
-    return color;
-}
+int Player::getId() const { return id; }
+std::string Player::getName() const { return name; }
+std::string Player::getColor() const { return color; }

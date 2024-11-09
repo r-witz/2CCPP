@@ -9,7 +9,7 @@ Board::Board() {
     tileMapping = std::vector<std::vector<std::shared_ptr<Tile>>>(size, std::vector<std::shared_ptr<Tile>>(size, nullptr));
 }
 
-Board::Board(int number_player, std::vector<Player> &players) {
+Board::Board(int number_player, std::vector<std::shared_ptr<Player>> players) {
     size = number_player > 4 ? 30 : 20;
     board = std::vector<std::vector<cell_state>>(size, std::vector<cell_state>(size, cell_state::EMPTY));
     tileMapping = std::vector<std::vector<std::shared_ptr<Tile>>>(size, std::vector<std::shared_ptr<Tile>>(size, nullptr));
@@ -33,7 +33,7 @@ void Board::displayBoard(std::shared_ptr<Tile> previewTile, int previewRow, int 
                 }
             }
 
-            if (inPreview) { std::cout << (canPlace ? players[currentPlayer-1].getColor() : "\033[0m") << "██" << "\033[0m"; } 
+            if (inPreview) { std::cout << (canPlace ? players[currentPlayer-1]->getColor() : "\033[0m") << "██" << "\033[0m"; } 
             else {
                 switch (board[i][j]) {
                     case cell_state::EMPTY: std::cout << "  "; break;
@@ -42,7 +42,7 @@ void Board::displayBoard(std::shared_ptr<Tile> previewTile, int previewRow, int 
                     case cell_state::TILE_EXCHANGE: std::cout << "\033[38;2;51;153;102m◖◗\033[0m"; break;
                     default:
                         int player_index = static_cast<int>(board[i][j]) - static_cast<int>(cell_state::P1);
-                        std::string player_color = players[player_index].getColor();
+                        std::string player_color = players[player_index]->getColor();
                         std::cout << player_color << "██" << "\033[0m";
                 }
             }
