@@ -118,7 +118,7 @@ void Board::placeBonus(int number_player) {
     }
 }
 
-bool Board::isTouchingSamePlayerTile(int boardRow, int boardCol, int ownerId) {
+bool Board::isTouchingPlayerTile(int boardRow, int boardCol, int ownerId, bool samePlayer) {
     const int directions[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
 
     for (const auto& dir : directions) {
@@ -127,26 +127,11 @@ bool Board::isTouchingSamePlayerTile(int boardRow, int boardCol, int ownerId) {
 
         if (neighborRow >= 0 && neighborRow < size && neighborCol >= 0 && neighborCol < size) {
             std::shared_ptr<Tile> neighborTile = tileMapping[neighborRow][neighborCol];
-            if (neighborTile && neighborTile->getOwnerId() == ownerId) {
-                return true;
-            }
-        }
-    }
-
-    return false;
-}
-
-bool Board::isTouchingOtherPlayerTile(int boardRow, int boardCol, int ownerId) {
-    const int directions[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-
-    for (const auto& dir : directions) {
-        int neighborRow = boardRow + dir[0];
-        int neighborCol = boardCol + dir[1];
-
-        if (neighborRow >= 0 && neighborRow < size && neighborCol >= 0 && neighborCol < size) {
-            std::shared_ptr<Tile> neighborTile = tileMapping[neighborRow][neighborCol];
-            if (neighborTile && neighborTile->getOwnerId() != ownerId) {
-                return true;
+            if (neighborTile) {
+                if ((samePlayer && neighborTile->getOwnerId() == ownerId) ||
+                    (!samePlayer && neighborTile->getOwnerId() != ownerId)) {
+                    return true;
+                }
             }
         }
     }
@@ -155,7 +140,7 @@ bool Board::isTouchingOtherPlayerTile(int boardRow, int boardCol, int ownerId) {
 }
 
 bool Board::canPlaceTile(std::shared_ptr<Tile> tile, int row, int col, bool firstRound) {
-    std::vector<std::vector<bool>> tileGrid = tile->getGrid();
+    const auto& tileGrid = tile->getGrid();
     int ownerId = tile->getOwnerId();
     bool touchesSamePlayerTile = false;
 
@@ -166,24 +151,16 @@ bool Board::canPlaceTile(std::shared_ptr<Tile> tile, int row, int col, bool firs
             int boardRow = row + i;
             int boardCol = col + j;
 
-            if (boardRow < 0 || boardRow >= size || boardCol < 0 || boardCol >= size) {
+            if (boardRow < 0 || boardRow >= size || boardCol < 0 || boardCol >= size) { return false; }
+
+            const auto& cellState = board[boardRow][boardCol];
+            if (cellState != cell_state::EMPTY && cellState != cell_state::ROBBERY &&
+                cellState != cell_state::STONE && cellState != cell_state::TILE_EXCHANGE) {
                 return false;
             }
 
-            if (board[boardRow][boardCol] != cell_state::EMPTY &&
-                board[boardRow][boardCol] != cell_state::ROBBERY &&
-                board[boardRow][boardCol] != cell_state::STONE &&
-                board[boardRow][boardCol] != cell_state::TILE_EXCHANGE) {
-                return false;
-            }
-
-            if (isTouchingOtherPlayerTile(boardRow, boardCol, ownerId)) {
-                return false;
-            }
-
-            if (!firstRound && isTouchingSamePlayerTile(boardRow, boardCol, ownerId)) {
-                touchesSamePlayerTile = true;
-            }
+            if (isTouchingPlayerTile(boardRow, boardCol, ownerId, false)) { return false; }
+            if (!firstRound && isTouchingPlayerTile(boardRow, boardCol, ownerId, true)) { touchesSamePlayerTile = true; }
         }
     }
 

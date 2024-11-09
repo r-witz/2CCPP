@@ -16,8 +16,7 @@ protected:
     std::vector<std::vector<std::shared_ptr<Tile>>> tileMapping;
     std::vector<Player> players;
 
-    bool isTouchingSamePlayerTile(int boardRow, int boardCol, int ownerId);
-    bool isTouchingOtherPlayerTile(int boardRow, int boardCol, int ownerId);
+    bool isTouchingPlayerTile(int boardRow, int boardCol, int ownerId, bool samePlayer);
 
 public:
     Board();
