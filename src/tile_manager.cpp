@@ -34,6 +34,12 @@ std::vector<std::shared_ptr<Tile>> TileManager::readTileFile(const std::string f
     return tiles;
 }
 
+void TileManager::clearLines(int numLines) const {
+    for (int i = 0; i < numLines; ++i) {
+        std::cout << "\033[F" << "\033[K";
+    }
+}
+
 void TileManager::displayTiles(int number_of_tile, int offset, int selected_tile, std::string selectedTileColor) {
     int endIndex = offset + number_of_tile;
 
@@ -89,13 +95,18 @@ std::shared_ptr<Tile> TileManager::chooseTile(std::string selectedTileColor) {
     int selected_tile = offset;
     inputs input;
 
+    int maxRows = 0;
+    for (int i = offset; i < offset+number_of_tiles; ++i) {
+        maxRows = std::max(maxRows, static_cast<int>(tileQueue[i]->getGrid().size()));
+    }
+
     do {
         std::cout << "Choose a tile :" << std::endl;
         displayTiles(number_of_tiles, offset, selected_tile, selectedTileColor);
         input = input_handler.getKeyPress();
 
-        if (input == inputs::RIGHT) { if (++selected_tile >= offset + number_of_tiles) { selected_tile = offset; } }
-        else if (input == inputs::LEFT) { if (--selected_tile < offset) { selected_tile = offset + number_of_tiles - 1; } }
+        if (input == inputs::RIGHT) { if (++selected_tile >= offset + number_of_tiles) { selected_tile = offset; } clearLines(maxRows+2); }
+        else if (input == inputs::LEFT) { if (--selected_tile < offset) { selected_tile = offset + number_of_tiles - 1; } clearLines(maxRows+2); }
     } while (input != inputs::ENTER);
 
     std::shared_ptr<Tile> chosenTile = tileQueue[selected_tile];

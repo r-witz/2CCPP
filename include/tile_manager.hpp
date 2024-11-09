@@ -15,6 +15,7 @@ private:
     std::vector<std::shared_ptr<Tile>> tileQueue;
 
     std::vector<std::shared_ptr<Tile>> readTileFile(const std::string filePath);
+    void clearLines(int numLines) const;
 
 public:
     TileManager();

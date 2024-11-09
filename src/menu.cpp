@@ -8,6 +8,12 @@ Menu::Menu() {
     input_handler = InputHandler();
 }
 
+void Menu::clearLines(int numLines) const {
+    for (int i = 0; i < numLines; ++i) {
+        std::cout << "\033[F" << "\033[K";
+    }
+}
+
 void Menu::displayTitle() {
     std::cout << "+------------------+" << std::endl
               << "|                  |" << std::endl
@@ -47,6 +53,7 @@ main_menu_options Menu::mainMenu() {
         input = input_handler.getKeyPress();
         if (input == inputs::UP || input == inputs::DOWN) {
             selected_option = selected_option == main_menu_options::PLAY ? main_menu_options::EXIT : main_menu_options::PLAY;
+            clearLines(7);
         }
 
     } while(input != inputs::ENTER);
@@ -118,8 +125,8 @@ player_color_options Menu::playerColor(int player_number) {
         displayPlayerColor(player_number, selected_option, selected_colors);
         input = input_handler.getKeyPress();
 
-        if (input == inputs::UP) { selected_index = (selected_index - 1 + option_count) % option_count; }
-        else if (input == inputs::DOWN) { selected_index = (selected_index + 1) % option_count; }
+        if (input == inputs::UP) { selected_index = (selected_index - 1 + option_count) % option_count; clearLines(8+option_count); }
+        else if (input == inputs::DOWN) { selected_index = (selected_index + 1) % option_count; clearLines(8+option_count); }
         selected_option = unselected_colors[selected_index];
     } while (input != inputs::ENTER);
 
@@ -158,9 +165,11 @@ tile_selection_options Menu::tileSelection(int exchange_coupon) {
         input = input_handler.getKeyPress();
         if (input == inputs::UP || input == inputs::DOWN) {
             selected_option = selected_option == tile_selection_options::TAKE ? tile_selection_options::EXCHANGE : tile_selection_options::TAKE;
+            clearLines(7);
         }
 
-    } while(input != inputs::ENTER);
+        if (input == inputs::ENTER && selected_option == tile_selection_options::EXCHANGE && exchange_coupon == 0) { clearLines(7); continue;}
+    } while(input != inputs::ENTER || (selected_option == tile_selection_options::EXCHANGE && exchange_coupon == 0));
 
     return selected_option;
 }
@@ -202,8 +211,8 @@ tile_action_options Menu::tileAction() {
         displayTileAction(selected_option);
         input = input_handler.getKeyPress();
 
-        if (input == inputs::UP) { selected_option = tile_action_options((static_cast<int>(selected_option) - 1 + 3) % 3); }
-        else if (input == inputs::DOWN) { selected_option = tile_action_options((static_cast<int>(selected_option) + 1) % 3); }
+        if (input == inputs::UP) { selected_option = tile_action_options((static_cast<int>(selected_option) - 1 + 3) % 3); clearLines(8); }
+        else if (input == inputs::DOWN) { selected_option = tile_action_options((static_cast<int>(selected_option) + 1) % 3); clearLines(8); }
     } while (input != inputs::ENTER);
 
     return selected_option;

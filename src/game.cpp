@@ -74,7 +74,7 @@ void Game::displayPlayerTurn(const std::shared_ptr<Player> player, int round) co
 
 std::shared_ptr<Tile> Game::selectTile(const std::shared_ptr<Player> player) {
     std::shared_ptr<Tile> selectedTile;
-    tile_selection_options tile_selection = menu.tileSelection(0);
+    tile_selection_options tile_selection = menu.tileSelection(1);
 
     switch (tile_selection) {
         case tile_selection_options::TAKE: selectedTile = tile_manager.getNextTile(); break;
@@ -93,8 +93,8 @@ void Game::placeTile(std::shared_ptr<Tile> &selectedTile, const std::shared_ptr<
         action = menu.tileAction();
 
         switch (action) {
-            case tile_action_options::FLIP: selectedTile->flip(); break;
-            case tile_action_options::ROTATE: selectedTile->rotate(); break;
+            case tile_action_options::FLIP: selectedTile->flip(); menu.clearLines(10+selectedTile->getGrid().size()); break;
+            case tile_action_options::ROTATE: selectedTile->rotate(); menu.clearLines(10+selectedTile->getGrid()[0].size()); break;
             case tile_action_options::PLACE: playerPlaceTile(selectedTile, player->getId(), false); break;
         }
     } while (action != tile_action_options::PLACE);
@@ -105,19 +105,20 @@ void Game::playerPlaceTile(std::shared_ptr<Tile> tile, int playerIndex, bool fir
     int row = 0, col = 0;
     bool canPlace = board.canPlaceTile(tile, row, col, firstRound);
 
-    while (true) {
+    inputs key;
+    do {
         board.displayBoard(tile, row, col, playerIndex, canPlace);
 
-        inputs key = inputHandler.getKeyPress();
+        key = inputHandler.getKeyPress();
         switch (key) {
-            case UP: if (row > 0) --row; break;
-            case DOWN: if (row + tile->getGrid().size() < board.getSize()) ++row; break;
-            case LEFT: if (col > 0) --col; break;
-            case RIGHT: if (col + tile->getGrid()[0].size() < board.getSize()) ++col; break;
-            case ENTER: if (canPlace) { board.placeTile(tile, row, col); return; } break;
+            case UP: if (row > 0) --row; menu.clearLines(board.getSize()+3); break;
+            case DOWN: if (row + tile->getGrid().size() < board.getSize()) ++row; menu.clearLines(board.getSize()+3); break;
+            case LEFT: if (col > 0) --col; menu.clearLines(board.getSize()+3); break;
+            case RIGHT: if (col + tile->getGrid()[0].size() < board.getSize()) ++col; menu.clearLines(board.getSize()+3); break;
+            case ENTER: if (canPlace) { board.placeTile(tile, row, col); } break;
             default: break;
         }
 
         canPlace = board.canPlaceTile(tile, row, col, firstRound);
-    }
+    } while (key != inputs::ENTER);
 }

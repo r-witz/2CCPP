@@ -24,6 +24,7 @@ private:
 public:
     Menu();
 
+    void clearLines(int numLines) const;
     void displayTitle();
     main_menu_options mainMenu();
     player_color_options playerColor(int player_number);
