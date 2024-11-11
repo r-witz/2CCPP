@@ -105,8 +105,10 @@ std::shared_ptr<Tile> TileManager::chooseTile(std::string selectedTileColor) {
         displayTiles(number_of_tiles, offset, selected_tile, selectedTileColor);
         input = input_handler.getKeyPress();
 
-        if (input == inputs::RIGHT) { if (++selected_tile >= offset + number_of_tiles) { selected_tile = offset; } clearLines(maxRows+2); }
-        else if (input == inputs::LEFT) { if (--selected_tile < offset) { selected_tile = offset + number_of_tiles - 1; } clearLines(maxRows+2); }
+        if (input == inputs::RIGHT) { if (++selected_tile >= offset + number_of_tiles) { selected_tile = offset; } }
+        else if (input == inputs::LEFT) { if (--selected_tile < offset) { selected_tile = offset + number_of_tiles - 1; } }
+
+        if (input != inputs::ENTER) { clearLines(maxRows+2); }
     } while (input != inputs::ENTER);
 
     std::shared_ptr<Tile> chosenTile = tileQueue[selected_tile];
