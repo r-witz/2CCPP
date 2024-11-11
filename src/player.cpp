@@ -3,6 +3,7 @@
 Player::Player(int id, std::string name, enum player_color_options color) {
     this->id = id;
     this->name = name;
+    this->tile_exchange_coupon = 1;
 
     switch (color) {
         case player_color_options::RED: this->color = "\033[38;2;255;0;0m"; break;
@@ -20,3 +21,5 @@ Player::Player(int id, std::string name, enum player_color_options color) {
 int Player::getId() const { return id; }
 std::string Player::getName() const { return name; }
 std::string Player::getColor() const { return color; }
+int Player::getTileExchangeCoupon() const { return tile_exchange_coupon; }
+void Player::addTileExchangeCoupon(int number) { tile_exchange_coupon += number; }

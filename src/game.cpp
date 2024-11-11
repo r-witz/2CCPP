@@ -74,11 +74,16 @@ void Game::displayPlayerTurn(const std::shared_ptr<Player> player, int round) co
 
 std::shared_ptr<Tile> Game::selectTile(const std::shared_ptr<Player> player) {
     std::shared_ptr<Tile> selectedTile;
-    tile_selection_options tile_selection = menu.tileSelection(1);
+    tile_selection_options tile_selection = menu.tileSelection(player->getTileExchangeCoupon());
 
     switch (tile_selection) {
-        case tile_selection_options::TAKE: selectedTile = tile_manager.getNextTile(); break;
-        case tile_selection_options::EXCHANGE: selectedTile = tile_manager.chooseTile(player->getColor()); break;
+        case tile_selection_options::TAKE:
+            selectedTile = tile_manager.getNextTile();
+            break;
+        case tile_selection_options::EXCHANGE:
+            player->addTileExchangeCoupon(-1);
+            selectedTile = tile_manager.chooseTile(player->getColor());
+            break;
     }
 
     return selectedTile;
