@@ -1,6 +1,7 @@
 #include "../include/board.hpp"
 #include <iostream>
 #include <cmath>
+#include <memory>
 #include <random>
 
 Board::Board() {
@@ -19,6 +20,11 @@ Board::Board(int number_player, std::vector<std::shared_ptr<Player>> players) {
 int Board::getSize() { return size; }
 
 void Board::displayBoard(std::shared_ptr<Tile> previewTile, int previewRow, int previewCol, int currentPlayer, bool canPlace) {
+    const std::string robbery_color = "\033[38;2;255;255;204m";
+    const std::string stone_color = "\033[38;2;192;192;192m";
+    const std::string tile_exchange_color = "\033[38;2;51;153;102m";
+    const std::string reset_color = "\033[0m";
+
     std::cout << "+" << std::string(size * 2, '-') << "+" << std::endl;
 
     for (int i = 0; i < size; ++i) {
@@ -33,45 +39,45 @@ void Board::displayBoard(std::shared_ptr<Tile> previewTile, int previewRow, int 
                 }
             }
 
-            if (inPreview) { std::cout << (canPlace ? players[currentPlayer-1]->getColor() : "\033[0m") << "██" << "\033[0m"; } 
+            if (inPreview) { std::cout << (canPlace ? players[currentPlayer-1]->getColor() : reset_color) << "██" << reset_color; } 
             else {
-                switch (board[i][j]) {
-                    case cell_state::EMPTY: std::cout << "  "; break;
-                    case cell_state::ROBBERY: std::cout << "\033[38;2;255;255;204m◖◗\033[0m"; break;
-                    case cell_state::STONE: std::cout << "\033[38;2;192;192;192m◖◗\033[0m"; break;
-                    case cell_state::TILE_EXCHANGE: std::cout << "\033[38;2;51;153;102m◖◗\033[0m"; break;
-                    default:
-                        int player_index = static_cast<int>(board[i][j]) - static_cast<int>(cell_state::P1);
-                        std::string player_color = players[player_index]->getColor();
-                        std::cout << player_color << "██" << "\033[0m";
+                std::shared_ptr<Tile> tile = tileMapping[i][j];
+                int ownerId = tile ? tile->getOwnerId() : -1;
+
+                if (board[i][j] == cell_state::BONUS && tile) {
+                    std::string bonus_color;
+                    switch (tile->getBonusState()) {
+                        case bonus_state::ROBBERY: bonus_color = robbery_color; break;
+                        case bonus_state::STONE: bonus_color = stone_color; break;
+                        case bonus_state::TILE_EXCHANGE: bonus_color = tile_exchange_color; break;
+                        default: bonus_color = reset_color; break;
+                    }
+
+                    std::cout << bonus_color << "BB" << reset_color;
                 }
-            }
-        }
+                else if (board[i][j] == cell_state::EMPTY) { std::cout << "  "; }
+                else {
+                    std::string playerColor = players[ownerId - 1]->getColor();
+                    std::cout << playerColor << "██" << reset_color;
+                }
+            }        }
         std::cout << "|" << std::endl;
     }
     std::cout << "+" << std::string(size * 2, '-') << "+" << std::endl << std::endl;
 }
 
 bool Board::verifyBonusPlace(int x, int y) {
-    if (x <= 0 || x >= size - 1 || y <= 0 || y >= size - 1) {
-        return false;
-    }
+    if (x <= 0 || x >= size - 1 || y <= 0 || y >= size - 1) { return false; }
 
     for (int row = -1; row <= 1; ++row) {
         for (int col = -1; col <= 1; ++col) {
-            if (row == 0 && col == 0) {
-                continue;
-            }
+            if (row == 0 && col == 0) { continue; }
 
             int rowx = x + row;
             int coly = y + col;
 
             if (rowx >= 0 && rowx < size && coly >= 0 && coly < size) {
-                if (board[rowx][coly] == cell_state::ROBBERY ||
-                    board[rowx][coly] == cell_state::STONE ||
-                    board[rowx][coly] == cell_state::TILE_EXCHANGE) {
-                    return false;
-                }
+                if (board[rowx][coly] == cell_state::BONUS) { return false; }
             }
         }
     }
@@ -89,32 +95,23 @@ void Board::placeBonus(int number_player) {
 
     for (int i = 0; i < number_player; ++i) {
         int x, y;
-        do {
-            x = dist(gen);
-            y = dist(gen);
-        } while (!verifyBonusPlace(x, y));
-
-        board[x][y] = cell_state::ROBBERY;
+        do { x = dist(gen); y = dist(gen); } while (!verifyBonusPlace(x, y));
+        board[x][y] = cell_state::BONUS;
+        tileMapping[x][y] = std::make_shared<Tile>(bonus_state::ROBBERY);
     }
 
     for (int i = 0; i < number_stone; ++i) {
-        int x, y;
-        do {
-            x = dist(gen);
-            y = dist(gen);
+        int x, y; do { x = dist(gen); y = dist(gen);
         } while (!verifyBonusPlace(x, y));
-
-        board[x][y] = cell_state::STONE;
+        board[x][y] = cell_state::BONUS;
+        tileMapping[x][y] = std::make_shared<Tile>(bonus_state::STONE);
     }
 
     for (int i = 0; i < number_tile_exchange; ++i) {
         int x, y;
-        do {
-            x = dist(gen);
-            y = dist(gen);
-        } while (!verifyBonusPlace(x, y));
-
-        board[x][y] = cell_state::TILE_EXCHANGE;
+        do { x = dist(gen); y = dist(gen); } while (!verifyBonusPlace(x, y));
+        board[x][y] = cell_state::BONUS;
+        tileMapping[x][y] = std::make_shared<Tile>(bonus_state::TILE_EXCHANGE);
     }
 }
 
@@ -127,7 +124,7 @@ bool Board::isTouchingPlayerTile(int boardRow, int boardCol, int ownerId, bool s
 
         if (neighborRow >= 0 && neighborRow < size && neighborCol >= 0 && neighborCol < size) {
             std::shared_ptr<Tile> neighborTile = tileMapping[neighborRow][neighborCol];
-            if (neighborTile) {
+            if (neighborTile && neighborTile->getOwnerId() != -1) {
                 if ((samePlayer && neighborTile->getOwnerId() == ownerId) ||
                     (!samePlayer && neighborTile->getOwnerId() != ownerId)) {
                     return true;
@@ -154,10 +151,7 @@ bool Board::canPlaceTile(std::shared_ptr<Tile> tile, int row, int col, bool firs
             if (boardRow < 0 || boardRow >= size || boardCol < 0 || boardCol >= size) { return false; }
 
             const auto& cellState = board[boardRow][boardCol];
-            if (cellState != cell_state::EMPTY && cellState != cell_state::ROBBERY &&
-                cellState != cell_state::STONE && cellState != cell_state::TILE_EXCHANGE) {
-                return false;
-            }
+            if (cellState != cell_state::EMPTY && cellState != cell_state::BONUS) { return false; }
 
             if (isTouchingPlayerTile(boardRow, boardCol, ownerId, false)) { return false; }
             if (!firstRound && isTouchingPlayerTile(boardRow, boardCol, ownerId, true)) { touchesSamePlayerTile = true; }
@@ -168,16 +162,16 @@ bool Board::canPlaceTile(std::shared_ptr<Tile> tile, int row, int col, bool firs
 }
 
 void Board::placeTile(std::shared_ptr<Tile> tile, int row, int col) {
+    int ownerId = tile->getOwnerId();
     for (int i = 0; i < tile->getGrid().size(); i++) {
         for (int j = 0; j < tile->getGrid()[0].size(); j++) {
             if (tile->getGrid()[i][j]) {
-                board[row + i][col + j] = static_cast<cell_state>(tile->getOwnerId());
+                board[row + i][col + j] = static_cast<cell_state>(ownerId);
                 tileMapping[row + i][col + j] = tile;
             }
         }
     }
 }
-
 
 std::shared_ptr<Tile> Board::getTileAt(int row, int col) {
     return tileMapping[row][col];

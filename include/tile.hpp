@@ -3,24 +3,24 @@
 
 #include <vector>
 
+enum bonus_state {NOB, TILE_EXCHANGE, STONE, ROBBERY};
+
 class Tile {
 private:
     std::vector<std::vector<bool>> grid;
     int owner_id;
-    int cluster_id;
+    bonus_state bonus_type;
 
 public:
     Tile();
-    Tile(const Tile& other); 
-    Tile(const std::vector<std::vector<bool>> &grid, int owner_id = -1, int cluster_id = -1);
+    Tile(bonus_state bonus_type);
+    Tile(const std::vector<std::vector<bool>> &grid, int owner_id = -1);
 
     std::vector<std::vector<bool>> getGrid();
 
     int getOwnerId();
     void setOwnerId(int id);
-
-    int getClusterId();
-    void setClusterId(int id);
+    bonus_state getBonusState();
 
     void flip();
     void rotate();

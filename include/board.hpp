@@ -7,7 +7,7 @@
 #include <vector>
 #include <memory>
 
-enum cell_state {EMPTY, P1, P2, P3, P4, P5, P6, P7, P8, P9, TILE_EXCHANGE, STONE, ROBBERY};
+enum cell_state { EMPTY, P1, P2, P3, P4, P5, P6, P7, P8, P9, BONUS };
 
 class Board {
 protected:
@@ -16,6 +16,8 @@ protected:
     std::vector<std::vector<std::shared_ptr<Tile>>> tileMapping;
     std::vector<std::shared_ptr<Player>> players;
 
+    bool isBonusCell(cell_state state) const;
+    int getClaimingPlayerId(int row, int col) const;
     bool isTouchingPlayerTile(int boardRow, int boardCol, int ownerId, bool samePlayer);
 
 public:
@@ -28,6 +30,7 @@ public:
     bool verifyBonusPlace(int x, int y);
     void placeBonus(int number_player);
 
+    void checkAndClaimBonus();
     bool canPlaceTile(std::shared_ptr<Tile> tile, int row, int col, bool firstRound);
     void placeTile(std::shared_ptr<Tile> tile, int row, int col);
     std::shared_ptr<Tile> getTileAt(int x, int y);

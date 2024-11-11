@@ -37,6 +37,7 @@ void Game::initializePlayers() {
 void Game::setupBoardAndTiles() {
     tile_manager.randomizeTileQueue(player_number);
     board = Board(player_number, players);
+    board.placeBonus(player_number);
 
     for (auto& player : players) {
         std::shared_ptr<Tile> startingTile = std::make_shared<Tile>();
@@ -89,16 +90,6 @@ std::shared_ptr<Tile> Game::selectTile(const std::shared_ptr<Player> player) {
     return selectedTile;
 }
 
-bool Game::canPlaceTileAnywhere(std::shared_ptr<Tile> &tile) {
-    int boardSize = board.getSize();
-    for (int row = 0; row < boardSize; ++row) {
-        for (int col = 0; col < boardSize; ++col) {
-            if (board.canPlaceTile(tile, row, col, false)) { return true; }
-        }
-    }
-    return false;
-}
-
 void Game::placeTile(std::shared_ptr<Tile> &selectedTile, const std::shared_ptr<Player> player) {
     tile_action_options action;
 
@@ -125,6 +116,16 @@ void Game::placeTile(std::shared_ptr<Tile> &selectedTile, const std::shared_ptr<
                 break;
         }
     } while (action != tile_action_options::PLACE);
+}
+
+bool Game::canPlaceTileAnywhere(std::shared_ptr<Tile> &tile) {
+    int boardSize = board.getSize();
+    for (int row = 0; row < boardSize; ++row) {
+        for (int col = 0; col < boardSize; ++col) {
+            if (board.canPlaceTile(tile, row, col, false)) { return true; }
+        }
+    }
+    return false;
 }
 
 void Game::playerPlaceTile(std::shared_ptr<Tile> tile, int playerIndex, bool firstRound) {
