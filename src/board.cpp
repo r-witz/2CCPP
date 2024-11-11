@@ -45,6 +45,7 @@ void Board::displayBoard(std::shared_ptr<Tile> previewTile, int previewRow, int 
                 int ownerId = tile ? tile->getOwnerId() : -1;
 
                 if (board[i][j] == cell_state::BONUS && tile) {
+                    std::string owner_color = (ownerId > 0) ? players[ownerId - 1]->getColor() : reset_color;
                     std::string bonus_color;
                     switch (tile->getBonusState()) {
                         case bonus_state::ROBBERY: bonus_color = robbery_color; break;
@@ -52,8 +53,7 @@ void Board::displayBoard(std::shared_ptr<Tile> previewTile, int previewRow, int 
                         case bonus_state::TILE_EXCHANGE: bonus_color = tile_exchange_color; break;
                         default: bonus_color = reset_color; break;
                     }
-
-                    std::cout << bonus_color << "BB" << reset_color;
+                    std::cout << convertForegroundToBackground(owner_color) << bonus_color << "◖◗" << reset_color;
                 }
                 else if (board[i][j] == cell_state::EMPTY) { std::cout << "  "; }
                 else {
@@ -64,6 +64,13 @@ void Board::displayBoard(std::shared_ptr<Tile> previewTile, int previewRow, int 
         std::cout << "|" << std::endl;
     }
     std::cout << "+" << std::string(size * 2, '-') << "+" << std::endl << std::endl;
+}
+
+std::string Board::convertForegroundToBackground(const std::string& colorCode) {
+    std::string newColorCode = colorCode;
+    size_t pos = newColorCode.find("38;");
+    if (pos != std::string::npos) { newColorCode.replace(pos, 2, "48"); }
+    return newColorCode;
 }
 
 bool Board::verifyBonusPlace(int x, int y) {
@@ -112,6 +119,54 @@ void Board::placeBonus(int number_player) {
         do { x = dist(gen); y = dist(gen); } while (!verifyBonusPlace(x, y));
         board[x][y] = cell_state::BONUS;
         tileMapping[x][y] = std::make_shared<Tile>(bonus_state::TILE_EXCHANGE);
+    }
+}
+
+void Board::claimSurroundedBonuses() {
+    for (int i = 1; i < size - 1; ++i) {
+        for (int j = 1; j < size - 1; ++j) {
+            if (board[i][j] != cell_state::BONUS || !tileMapping[i][j] || tileMapping[i][j]->getOwnerId() != -1) { continue; }
+
+            int surroundingOwnerId = -1;
+            bool surroundedBySamePlayer = true;
+
+            const int directions[4][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+            for (const auto& dir : directions) {
+                int neighborRow = i + dir[0];
+                int neighborCol = j + dir[1];
+                std::shared_ptr<Tile> neighborTile = tileMapping[neighborRow][neighborCol];
+
+                if (!neighborTile || neighborTile->getOwnerId() == -1) { surroundedBySamePlayer = false; break; }
+
+                if (surroundingOwnerId == -1) { surroundingOwnerId = neighborTile->getOwnerId(); }
+                else if (neighborTile->getOwnerId() != surroundingOwnerId) { surroundedBySamePlayer = false; break; }
+            }
+
+            if (!surroundedBySamePlayer || surroundingOwnerId == -1) { continue; }
+
+            tileMapping[i][j]->setOwnerId(surroundingOwnerId);
+            auto player = players[surroundingOwnerId-1];
+
+            switch (tileMapping[i][j]->getBonusState()) {
+                case bonus_state::ROBBERY:
+                    std::cout << player->getColor()
+                              << "Player " << surroundingOwnerId << " (" << player->getName() << ")"
+                              << " has claimed a Robbery Bonus!" << "\033[0m" << std::endl << std::endl;
+                    break;
+                case bonus_state::STONE:
+                    std::cout << players[surroundingOwnerId - 1]->getColor()
+                              << "Player " << surroundingOwnerId << " (" << player->getName() << ")"
+                              << " has claimed a Stone Bonus!" << "\033[0m" << std::endl << std::endl;
+                    break;
+                case bonus_state::TILE_EXCHANGE:
+                    std::cout << players[surroundingOwnerId - 1]->getColor()
+                              << "Player " << surroundingOwnerId << " (" << player->getName() << ")"
+                              << " has claimed a Tile Exchange Bonus!" << "\033[0m" << std::endl << std::endl;
+                    player->addTileExchangeCoupon(1);
+                    break;
+                default: break;
+            }
+        }
     }
 }
 

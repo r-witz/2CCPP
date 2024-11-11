@@ -16,6 +16,7 @@ protected:
     std::vector<std::vector<std::shared_ptr<Tile>>> tileMapping;
     std::vector<std::shared_ptr<Player>> players;
 
+    std::string convertForegroundToBackground(const std::string& colorCode);
     bool isBonusCell(cell_state state) const;
     int getClaimingPlayerId(int row, int col) const;
     bool isTouchingPlayerTile(int boardRow, int boardCol, int ownerId, bool samePlayer);
@@ -30,7 +31,7 @@ public:
     bool verifyBonusPlace(int x, int y);
     void placeBonus(int number_player);
 
-    void checkAndClaimBonus();
+    void claimSurroundedBonuses();
     bool canPlaceTile(std::shared_ptr<Tile> tile, int row, int col, bool firstRound);
     void placeTile(std::shared_ptr<Tile> tile, int row, int col);
     std::shared_ptr<Tile> getTileAt(int x, int y);

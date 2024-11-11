@@ -66,6 +66,7 @@ void Game::playTurn(std::shared_ptr<Player> player, int round) {
     std::shared_ptr<Tile> selectedTile = selectTile(player);
     selectedTile->setOwnerId(player->getId());
     placeTile(selectedTile, player);
+    board.claimSurroundedBonuses();
 }
 
 void Game::displayPlayerTurn(const std::shared_ptr<Player> player, int round) const {
