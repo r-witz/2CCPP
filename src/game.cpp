@@ -84,6 +84,16 @@ std::shared_ptr<Tile> Game::selectTile(const std::shared_ptr<Player> player) {
     return selectedTile;
 }
 
+bool Game::canPlaceTileAnywhere(std::shared_ptr<Tile> &tile) {
+    int boardSize = board.getSize();
+    for (int row = 0; row < boardSize; ++row) {
+        for (int col = 0; col < boardSize; ++col) {
+            if (board.canPlaceTile(tile, row, col, false)) { return true; }
+        }
+    }
+    return false;
+}
+
 void Game::placeTile(std::shared_ptr<Tile> &selectedTile, const std::shared_ptr<Player> player) {
     tile_action_options action;
 
@@ -93,9 +103,21 @@ void Game::placeTile(std::shared_ptr<Tile> &selectedTile, const std::shared_ptr<
         action = menu.tileAction();
 
         switch (action) {
-            case tile_action_options::FLIP: selectedTile->flip(); menu.clearLines(10+selectedTile->getGrid().size()); break;
-            case tile_action_options::ROTATE: selectedTile->rotate(); menu.clearLines(10+selectedTile->getGrid()[0].size()); break;
-            case tile_action_options::PLACE: playerPlaceTile(selectedTile, player->getId(), false); break;
+            case tile_action_options::FLIP:
+                selectedTile->flip();
+                menu.clearLines(10+selectedTile->getGrid().size());
+                break;
+            case tile_action_options::ROTATE:
+                selectedTile->rotate();
+                menu.clearLines(10+selectedTile->getGrid()[0].size());
+                break;
+            case tile_action_options::PLACE:
+                if (!canPlaceTileAnywhere(selectedTile)) {
+                    std::cout << "No valid placement available for this tile. Skipping placement." << std::endl << std::endl;
+                    return;
+                }
+                playerPlaceTile(selectedTile, player->getId(), false);
+                break;
         }
     } while (action != tile_action_options::PLACE);
 }
@@ -106,7 +128,7 @@ void Game::playerPlaceTile(std::shared_ptr<Tile> tile, int playerIndex, bool fir
     bool canPlace = board.canPlaceTile(tile, row, col, firstRound);
 
     inputs key;
-    do {
+    while(true) {
         board.displayBoard(tile, row, col, playerIndex, canPlace);
 
         key = inputHandler.getKeyPress();
@@ -115,10 +137,10 @@ void Game::playerPlaceTile(std::shared_ptr<Tile> tile, int playerIndex, bool fir
             case DOWN: if (row + tile->getGrid().size() < board.getSize()) ++row; menu.clearLines(board.getSize()+3); break;
             case LEFT: if (col > 0) --col; menu.clearLines(board.getSize()+3); break;
             case RIGHT: if (col + tile->getGrid()[0].size() < board.getSize()) ++col; menu.clearLines(board.getSize()+3); break;
-            case ENTER: if (canPlace) { board.placeTile(tile, row, col); } break;
+            case ENTER: if (canPlace) { board.placeTile(tile, row, col); return; } else { menu.clearLines(board.getSize()+3); } break;
             default: break;
         }
 
         canPlace = board.canPlaceTile(tile, row, col, firstRound);
-    } while (key != inputs::ENTER);
+    };
 }
