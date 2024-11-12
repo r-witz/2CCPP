@@ -45,11 +45,13 @@ void TileManager::displayTiles(int number_of_tile, int offset, int selected_tile
 
     int maxRows = 0;
     for (int i = offset; i < endIndex; ++i) {
-        maxRows = std::max(maxRows, static_cast<int>(tileQueue[i]->getGrid().size()));
+        if (i < tileQueue.size()) { maxRows = std::max(maxRows, static_cast<int>(tileQueue[i]->getGrid().size())); }
     }
 
     for (int row = 0; row < maxRows; ++row) {
         for (int i = offset; i < endIndex; ++i) {
+            if (i >= tileQueue.size()) { continue; }
+
             const auto& grid = tileQueue[i]->getGrid();
 
             if (row < grid.size()) {
@@ -57,10 +59,8 @@ void TileManager::displayTiles(int number_of_tile, int offset, int selected_tile
                     std::cout << selectedTileColor;
                     for (bool cell : grid[row]) { std::cout << (cell ? "██" : "  "); }
                     std::cout << "\033[0m";
-                } else {
-                    for (bool cell : grid[row]) { std::cout << (cell ? "██" : "  "); }
-                }
-            } else { std::cout << std::string(grid[0].size() * 2, ' '); }
+                } else { for (bool cell : grid[row]) { std::cout << (cell ? "██" : "  "); } }
+            } else if (!grid.empty()) { std::cout << std::string(grid[0].size() * 2, ' '); }
 
             std::cout << "  ";
         }
@@ -68,7 +68,6 @@ void TileManager::displayTiles(int number_of_tile, int offset, int selected_tile
     }
     std::cout << std::endl;
 }
-
 
 void TileManager::randomizeTileQueue(int player_number) {
     int totalTiles = static_cast<int>(std::round(10.67 * player_number));
@@ -91,7 +90,8 @@ std::shared_ptr<Tile> TileManager::getNextTile() {
 
 std::shared_ptr<Tile> TileManager::chooseTile(std::string selectedTileColor) {
     int offset = 1;
-    int number_of_tiles = 5;
+    int number_of_tiles = std::min(5, static_cast<int>(tileQueue.size()) - offset);
+    if (number_of_tiles <= 0) { throw std::runtime_error("No tiles left to choose from!"); }
     int selected_tile = offset;
     inputs input;
 
@@ -112,8 +112,10 @@ std::shared_ptr<Tile> TileManager::chooseTile(std::string selectedTileColor) {
     } while (input != inputs::ENTER);
 
     std::shared_ptr<Tile> chosenTile = tileQueue[selected_tile];
-    std::rotate(tileQueue.begin(), tileQueue.begin() + selected_tile, tileQueue.end());
-    tileQueue.erase(tileQueue.begin());
+    std::vector<std::shared_ptr<Tile>> newQueue;
+    for (int i = selected_tile + 1; i < tileQueue.size(); ++i) { newQueue.push_back(tileQueue[i]); }
+    for (int i = 0; i < selected_tile; ++i) { newQueue.push_back(tileQueue[i]); }
+    tileQueue = newQueue;
 
     return chosenTile;
 }
