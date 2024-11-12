@@ -26,6 +26,8 @@ private:
     bool canPlaceTileAnywhere(std::shared_ptr<Tile> &tile);
     void displayPlayerTurn(const std::shared_ptr<Player> player, int round) const;
     void playerPlaceTile(std::shared_ptr<Tile> tile, int playerIndex, bool firstRound);
+    std::shared_ptr<Tile> playerSelectTile(int playerIndex);
+    void useBonuses(std::shared_ptr<Player> player);
     void endGame();
 
 public:

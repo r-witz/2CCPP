@@ -68,6 +68,7 @@ void Game::playTurn(std::shared_ptr<Player> player, int round) {
     selectedTile->setOwnerId(player->getId());
     placeTile(selectedTile, player);
     board.claimSurroundedBonuses();
+    useBonuses(player);
 }
 
 void Game::displayPlayerTurn(const std::shared_ptr<Player> player, int round) const {
@@ -137,7 +138,7 @@ void Game::playerPlaceTile(std::shared_ptr<Tile> tile, int playerIndex, bool fir
 
     inputs key;
     while(true) {
-        board.displayBoard(tile, row, col, playerIndex, canPlace);
+        board.displayBoard(display_mode::PLACING, row, col, playerIndex, tile, canPlace);
 
         key = inputHandler.getKeyPress();
         switch (key) {
@@ -152,6 +153,51 @@ void Game::playerPlaceTile(std::shared_ptr<Tile> tile, int playerIndex, bool fir
         canPlace = board.canPlaceTile(tile, row, col, firstRound);
     };
 }
+
+std::shared_ptr<Tile> Game::playerSelectTile(int playerIndex) {
+    InputHandler inputHandler;
+    int row = 0, col = 0;
+    std::shared_ptr<Tile> selectedTile = nullptr;
+
+    inputs key;
+    while (true) {
+        board.displayBoard(display_mode::SELECTION, row, col, playerIndex);
+
+        key = inputHandler.getKeyPress();
+        switch (key) {
+            case UP: if (row > 0) --row; menu.clearLines(board.getSize() + 3);  break;
+            case DOWN: if (row < board.getSize() - 1) ++row; menu.clearLines(board.getSize() + 3); break;
+            case LEFT: if (col > 0) --col; menu.clearLines(board.getSize() + 3); break;
+            case RIGHT: if (col < board.getSize() - 1) ++col; menu.clearLines(board.getSize() + 3); break;
+            case ENTER: 
+                selectedTile = board.getTileAt(row, col);
+                if (selectedTile && selectedTile->getOwnerId() > 0 && selectedTile->getOwnerId() != playerIndex + 1) {
+                    board.removeTile(selectedTile);
+                    return selectedTile;
+                } else { menu.clearLines(board.getSize() + 3); }
+                break;
+            default: break;
+        }
+    }
+}
+
+void Game::useBonuses(std::shared_ptr<Player> player) {
+    int playerIndex = player->getId() - 1;
+
+    while (player->getRobberyBonus() > 0) {
+        std::cout << "You have a robbery bonus! Select an enemy tile to steal." << std::endl << std::endl;
+        std::shared_ptr<Tile> stolenTile = playerSelectTile(playerIndex);
+        std::cout << "Tile stolen! You can now modify and place it." << std::endl << std::endl;
+        player->addRobberyBonus(-1);
+
+
+        stolenTile->setOwnerId(player->getId());
+        placeTile(stolenTile, player);
+
+    }
+
+}
+
 
 void Game::endGame() {
     auto winner = board.determineWinner();

@@ -4,6 +4,8 @@ Player::Player(int id, std::string name, enum player_color_options color) {
     this->id = id;
     this->name = name;
     this->tile_exchange_coupon = 1;
+    this->robbery_bonus = 0;
+    this->stone_bonus = 0;
 
     switch (color) {
         case player_color_options::RED: this->color = "\033[38;2;255;0;0m"; break;
@@ -23,3 +25,7 @@ std::string Player::getName() const { return name; }
 std::string Player::getColor() const { return color; }
 int Player::getTileExchangeCoupon() const { return tile_exchange_coupon; }
 void Player::addTileExchangeCoupon(int number) { tile_exchange_coupon += number; }
+int Player::getRobberyBonus() const { return robbery_bonus; }
+void Player::addRobberyBonus(int number) { robbery_bonus += number; }
+int Player::getStoneBonus() const { return stone_bonus; }
+void Player::addStoneBonus(int number) { stone_bonus += number; }

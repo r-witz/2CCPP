@@ -20,31 +20,42 @@ Board::Board(int number_player, std::vector<std::shared_ptr<Player>> players) {
 
 int Board::getSize() { return size; }
 
-void Board::displayBoard(std::shared_ptr<Tile> previewTile, int previewRow, int previewCol, int currentPlayer, bool canPlace) {
+void Board::displayBoard(display_mode mode, int row, int col, int current_player, std::shared_ptr<Tile> placingTile, bool canPlace) {
+
     const std::string robbery_color = "\033[38;2;255;255;204m";
     const std::string stone_color = "\033[38;2;192;192;192m";
     const std::string tile_exchange_color = "\033[38;2;51;153;102m";
     const std::string reset_color = "\033[0m";
+    const std::string cursor_color = "\033[48;2;255;255;255m\033[38;2;255;255;255m";
+    const std::string highlight_color = "\033[38;2;255;255;255m";
+
+    std::shared_ptr<Tile> selectedTile = (mode == display_mode::SELECTION) ? tileMapping[row][col] : nullptr;
+    bool highlightFullTile = selectedTile && selectedTile->getOwnerId()-1 != current_player;
 
     std::cout << "+" << std::string(size * 2, '-') << "+" << std::endl;
 
     for (int i = 0; i < size; ++i) {
         std::cout << "|";
         for (int j = 0; j < size; ++j) {
+            std::shared_ptr<Tile> tile = tileMapping[i][j];
+            int ownerId = tile ? tile->getOwnerId() : -1;
             bool inPreview = false;
-            if (previewTile != nullptr) {
-                for (int x = 0; x < previewTile->getGrid().size(); ++x) {
-                    for (int y = 0; y < previewTile->getGrid()[0].size(); ++y) {
-                        if (previewTile->getGrid()[x][y] && i == previewRow + x && j == previewCol + y) { inPreview = true; }
+            bool inSelection = (mode == display_mode::SELECTION && i == row && j == col);
+            bool isPartOfSelectedTile = highlightFullTile && (tile == selectedTile);
+
+            if (mode == display_mode::PLACING && placingTile != nullptr) {
+                for (int x = 0; x < placingTile->getGrid().size(); ++x) {
+                    for (int y = 0; y < placingTile->getGrid()[0].size(); ++y) {
+                        if (placingTile->getGrid()[x][y] && i == row + x && j == col + y) { inPreview = true; }
                     }
                 }
             }
 
-            if (inPreview) { std::cout << (canPlace ? players[currentPlayer-1]->getColor() : reset_color) << "██" << reset_color; } 
-            else {
-                std::shared_ptr<Tile> tile = tileMapping[i][j];
-                int ownerId = tile ? tile->getOwnerId() : -1;
-
+            if (mode == display_mode::PLACING && inPreview) {
+                std::cout << (canPlace ? players[current_player - 1]->getColor() : reset_color) << "██" << reset_color;
+            } else if (mode == display_mode::SELECTION && (inSelection || isPartOfSelectedTile)) {
+                std::cout << cursor_color << "██" << reset_color;
+            } else {
                 if (board[i][j] == cell_state::BONUS && tile) {
                     std::string owner_color = (ownerId > 0) ? players[ownerId - 1]->getColor() : reset_color;
                     std::string bonus_color;
@@ -61,7 +72,8 @@ void Board::displayBoard(std::shared_ptr<Tile> previewTile, int previewRow, int 
                     std::string playerColor = players[ownerId - 1]->getColor();
                     std::cout << playerColor << "██" << reset_color;
                 }
-            }        }
+            }
+        }
         std::cout << "|" << std::endl;
     }
     std::cout << "+" << std::string(size * 2, '-') << "+" << std::endl << std::endl;
@@ -153,11 +165,13 @@ void Board::claimSurroundedBonuses() {
                     std::cout << player->getColor()
                               << "Player " << surroundingOwnerId << " (" << player->getName() << ")"
                               << " has claimed a Robbery Bonus!" << "\033[0m" << std::endl << std::endl;
+                    player->addRobberyBonus(1);
                     break;
                 case bonus_state::STONE:
                     std::cout << players[surroundingOwnerId - 1]->getColor()
                               << "Player " << surroundingOwnerId << " (" << player->getName() << ")"
                               << " has claimed a Stone Bonus!" << "\033[0m" << std::endl << std::endl;
+                    player->addStoneBonus(1);
                     break;
                 case bonus_state::TILE_EXCHANGE:
                     std::cout << players[surroundingOwnerId - 1]->getColor()
@@ -225,6 +239,20 @@ void Board::placeTile(std::shared_ptr<Tile> tile, int row, int col) {
                 board[row + i][col + j] = static_cast<cell_state>(ownerId);
                 tileMapping[row + i][col + j] = tile;
             }
+        }
+    }
+}
+
+void Board::removeTile(std::shared_ptr<Tile> tileToRemove) {
+    if (!tileToRemove) return;
+
+    for (int row = 0; row < size; ++row) {
+        for (int col = 0; col < size; ++col) {
+            std::shared_ptr<Tile> currentTile = tileMapping[row][col];
+            if (currentTile != tileToRemove) { continue; }
+
+            tileMapping[row][col] = nullptr;
+            board[row][col] = cell_state::EMPTY;
         }
     }
 }
