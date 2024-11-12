@@ -16,6 +16,7 @@ void Game::start() {
     initializePlayers();
     setupBoardAndTiles();
     playRounds(9);
+    endGame();
 }
 
 bool Game::displayMainMenu() {
@@ -150,4 +151,9 @@ void Game::playerPlaceTile(std::shared_ptr<Tile> tile, int playerIndex, bool fir
 
         canPlace = board.canPlaceTile(tile, row, col, firstRound);
     };
+}
+
+void Game::endGame() {
+    auto winner = board.determineWinner();
+    menu.displayWinner(winner->getId());
 }

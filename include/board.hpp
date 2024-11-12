@@ -35,6 +35,7 @@ public:
     bool canPlaceTile(std::shared_ptr<Tile> tile, int row, int col, bool firstRound);
     void placeTile(std::shared_ptr<Tile> tile, int row, int col);
     std::shared_ptr<Tile> getTileAt(int x, int y);
+    std::shared_ptr<Player> determineWinner();
 };
 
 #endif

@@ -3,6 +3,7 @@
 #include <cmath>
 #include <memory>
 #include <random>
+#include <algorithm>
 
 Board::Board() {
     size = 30;
@@ -230,4 +231,55 @@ void Board::placeTile(std::shared_ptr<Tile> tile, int row, int col) {
 
 std::shared_ptr<Tile> Board::getTileAt(int row, int col) {
     return tileMapping[row][col];
+}
+
+std::shared_ptr<Player> Board::determineWinner() {
+    int numPlayers = players.size();
+    std::vector<int> maxSquareSize(numPlayers, 0);
+    std::vector<int> total1x1Tiles(numPlayers, 0);
+
+    std::vector<std::vector<int>> dp(size, std::vector<int>(size, 0));
+
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
+            auto tile = tileMapping[i][j];
+            if (!tile || tile->getOwnerId() <= 0) { continue; }
+
+            int ownerId = tile->getOwnerId() - 1;
+            dp[i][j] = 1;
+
+            if (i > 0 && j > 0 && tileMapping[i-1][j] && tileMapping[i][j-1] && tileMapping[i-1][j-1]) {
+                if (tileMapping[i-1][j]->getOwnerId() == tile->getOwnerId() &&
+                    tileMapping[i][j-1]->getOwnerId() == tile->getOwnerId() &&
+                    tileMapping[i-1][j-1]->getOwnerId() == tile->getOwnerId()) {
+                    dp[i][j] = std::min({dp[i-1][j], dp[i][j-1], dp[i-1][j-1]}) + 1;
+                }
+            }
+
+            maxSquareSize[ownerId] = std::max(maxSquareSize[ownerId], dp[i][j]);
+
+            total1x1Tiles[ownerId]++;
+        }
+    }
+
+    int maxTerritorySize = 0;
+    int winnerPlayerId = -1;
+    int max1x1Count = 0;
+
+    for (int i = 0; i < numPlayers; ++i) {
+        if (maxSquareSize[i] > maxTerritorySize) {
+            maxTerritorySize = maxSquareSize[i];
+            winnerPlayerId = i;
+            max1x1Count = total1x1Tiles[i];
+        } else if (maxSquareSize[i] == maxTerritorySize) {
+            if (total1x1Tiles[i] > max1x1Count) {
+                winnerPlayerId = i;
+                max1x1Count = total1x1Tiles[i];
+            }
+        }
+    }
+
+    std::shared_ptr<Player> winner = players[winnerPlayerId];
+
+    return winner;
 }
