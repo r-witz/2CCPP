@@ -140,6 +140,7 @@ player_color_options Menu::playerColor(int player_number) {
 void Menu::displayTileSelection(int exchange_coupon, tile_selection_options selected_option) {
     std::string takeLine = "|    Take          |";
     std::string exchangeLine = "|    Exchange (" + std::to_string(exchange_coupon) + ")  |";
+    std::string stoneLine = "|    Stone (" + std::to_string(exchange_coupon) + ")     |";
 
     switch (selected_option) {
         case tile_selection_options::TAKE:
@@ -147,32 +148,41 @@ void Menu::displayTileSelection(int exchange_coupon, tile_selection_options sele
             break;
         case tile_selection_options::EXCHANGE:
             exchangeLine = "|  ▶ Exchange (" + std::to_string(exchange_coupon) + ")  |";
+            break;
+        case tile_selection_options::REMOVE_STONE:
+            stoneLine = "|  ▶ Stone (" + std::to_string(exchange_coupon) + ")     |";
+            break;
     }
 
     std::cout << "+------------------+" << std::endl
               << "|                  |" << std::endl
               << takeLine << std::endl
               << exchangeLine << std::endl
+              << stoneLine << std::endl
               << "|                  |" << std::endl
               << "+------------------+" << std::endl
               << std::endl;
 }
 
 
-tile_selection_options Menu::tileSelection(int exchange_coupon) {
+tile_selection_options Menu::tileSelection(int exchange_coupon, bool isStoneToClear) {
     tile_selection_options selected_option = tile_selection_options::TAKE;
     inputs input;
 
     do {
         displayTileSelection(exchange_coupon, selected_option);
         input = input_handler.getKeyPress();
-        if (input == inputs::UP || input == inputs::DOWN) {
-            selected_option = selected_option == tile_selection_options::TAKE ? tile_selection_options::EXCHANGE : tile_selection_options::TAKE;
-        }
 
-        if (input != inputs::ENTER) { clearLines(7); }
-        else if (input == inputs::ENTER && selected_option == tile_selection_options::EXCHANGE && exchange_coupon == 0) { clearLines(7); continue;}
-    } while(input != inputs::ENTER || (selected_option == tile_selection_options::EXCHANGE && exchange_coupon == 0));
+        if (input == inputs::UP) { selected_option = tile_selection_options((static_cast<int>(selected_option) - 1 + 3) % 3); }
+        else if (input == inputs::DOWN) { selected_option = tile_selection_options((static_cast<int>(selected_option) + 1) % 3); }
+
+        bool isTakeOption = (selected_option == tile_selection_options::TAKE);
+        bool isExchangeOption = (selected_option == tile_selection_options::EXCHANGE && exchange_coupon > 0);
+        bool isStoneOption = (selected_option == tile_selection_options::REMOVE_STONE && exchange_coupon > 0 && isStoneToClear);
+
+        if (input == inputs::ENTER && (isTakeOption || isExchangeOption || isStoneOption)) { break; }
+        else { clearLines(8); }
+    } while(true);
 
     return selected_option;
 }
@@ -221,7 +231,6 @@ tile_action_options Menu::tileAction() {
     } while (input != inputs::ENTER);
 
     return selected_option;
-
 };
 
 void Menu::displayWinner(int player_number) {

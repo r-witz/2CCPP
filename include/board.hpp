@@ -8,7 +8,7 @@
 #include <memory>
 
 enum class display_mode { NORMAL, PLACING, SELECTION };
-enum cell_state { EMPTY, P1, P2, P3, P4, P5, P6, P7, P8, P9, BONUS };
+enum cell_state { EMPTY, P1, P2, P3, P4, P5, P6, P7, P8, P9, BONUS, STONE_CELL };
 
 class Board {
 protected:
@@ -35,9 +35,11 @@ public:
 
     void claimSurroundedBonuses();
     bool canPlaceTile(std::shared_ptr<Tile> tile, int row, int col, bool firstRound);
-    void placeTile(std::shared_ptr<Tile> tile, int row, int col);
+    void placeTile(std::shared_ptr<Tile> tile, int row, int col, cell_state cell_type=EMPTY);
     void removeTile(std::shared_ptr<Tile> tileToRemove);
-    std::shared_ptr<Tile> getTileAt(int x, int y);
+    std::shared_ptr<Tile> getTileAt(int row, int col);
+    cell_state getCellAt(int row, int col);
+    bool isStoneOnBoard();
     std::shared_ptr<Player> determineWinner();
 };
 

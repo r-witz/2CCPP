@@ -1,6 +1,7 @@
 #include "../include/game.hpp"
 
 #include <iostream>
+#include <memory>
 
 Game::Game() {
     menu = Menu();
@@ -78,17 +79,30 @@ void Game::displayPlayerTurn(const std::shared_ptr<Player> player, int round) co
 
 std::shared_ptr<Tile> Game::selectTile(const std::shared_ptr<Player> player) {
     std::shared_ptr<Tile> selectedTile;
-    tile_selection_options tile_selection = menu.tileSelection(player->getTileExchangeCoupon());
+    tile_selection_options tile_selection;
+    bool isStoneToClear = board.isStoneOnBoard();
 
-    switch (tile_selection) {
-        case tile_selection_options::TAKE:
-            selectedTile = tile_manager.getNextTile();
-            break;
-        case tile_selection_options::EXCHANGE:
-            player->addTileExchangeCoupon(-1);
-            selectedTile = tile_manager.chooseTile(player->getColor());
-            break;
-    }
+    do {
+        tile_selection = menu.tileSelection(player->getTileExchangeCoupon(), isStoneToClear);
+        switch (tile_selection) {
+            case tile_selection_options::TAKE:
+                selectedTile = tile_manager.getNextTile();
+                break;
+            case tile_selection_options::EXCHANGE:
+                player->addTileExchangeCoupon(-1);
+                selectedTile = tile_manager.chooseTile(player->getColor());
+                break;
+            case tile_selection_options::REMOVE_STONE:
+                player->addTileExchangeCoupon(-1);
+                playerRemoveStone(player->getId()-1);
+                std::cout << "Current Tile:" << std::endl;
+                tile_manager.displayTiles(1, 0, -1, "");
+                std::cout << "Next Tiles:" << std::endl;
+                tile_manager.displayTiles(5, 1, -1, "");
+                board.displayBoard();
+                break;
+        }
+    } while (tile_selection == tile_selection_options::REMOVE_STONE);
 
     return selectedTile;
 }
@@ -142,19 +156,20 @@ void Game::playerPlaceTile(std::shared_ptr<Tile> tile, int playerIndex, bool fir
 
         key = inputHandler.getKeyPress();
         switch (key) {
-            case UP: if (row > 0) --row; menu.clearLines(board.getSize()+3); break;
-            case DOWN: if (row + tile->getGrid().size() < board.getSize()) ++row; menu.clearLines(board.getSize()+3); break;
-            case LEFT: if (col > 0) --col; menu.clearLines(board.getSize()+3); break;
-            case RIGHT: if (col + tile->getGrid()[0].size() < board.getSize()) ++col; menu.clearLines(board.getSize()+3); break;
+            case UP: if (row > 0) --row; break;
+            case DOWN: if (row + tile->getGrid().size() < board.getSize()) ++row; break;
+            case LEFT: if (col > 0) --col; break;
+            case RIGHT: if (col + tile->getGrid()[0].size() < board.getSize()) ++col; break;
             case ENTER: if (canPlace) { board.placeTile(tile, row, col); return; } else { menu.clearLines(board.getSize()+3); } break;
             default: break;
         }
 
+        if (key != ENTER) { menu.clearLines(board.getSize() + 3); }
         canPlace = board.canPlaceTile(tile, row, col, firstRound);
     };
 }
 
-std::shared_ptr<Tile> Game::playerSelectTile(int playerIndex) {
+std::shared_ptr<Tile> Game::playerRemoveEnemyTile(int playerIndex) {
     InputHandler inputHandler;
     int row = 0, col = 0;
     std::shared_ptr<Tile> selectedTile = nullptr;
@@ -165,10 +180,10 @@ std::shared_ptr<Tile> Game::playerSelectTile(int playerIndex) {
 
         key = inputHandler.getKeyPress();
         switch (key) {
-            case UP: if (row > 0) --row; menu.clearLines(board.getSize() + 3);  break;
-            case DOWN: if (row < board.getSize() - 1) ++row; menu.clearLines(board.getSize() + 3); break;
-            case LEFT: if (col > 0) --col; menu.clearLines(board.getSize() + 3); break;
-            case RIGHT: if (col < board.getSize() - 1) ++col; menu.clearLines(board.getSize() + 3); break;
+            case UP: if (row > 0) --row; break;
+            case DOWN: if (row < board.getSize() - 1) ++row; break;
+            case LEFT: if (col > 0) --col; break;
+            case RIGHT: if (col < board.getSize() - 1) ++col; break;
             case ENTER: 
                 selectedTile = board.getTileAt(row, col);
                 if (selectedTile && selectedTile->getOwnerId() > 0 && selectedTile->getOwnerId() != playerIndex + 1) {
@@ -178,6 +193,66 @@ std::shared_ptr<Tile> Game::playerSelectTile(int playerIndex) {
                 break;
             default: break;
         }
+
+        if (key != ENTER) { menu.clearLines(board.getSize() + 3); }
+    }
+}
+
+void Game::playerRemoveStone(int playerIndex) {
+    InputHandler inputHandler;
+    int row = 0, col = 0;
+    std::shared_ptr<Tile> selectedTile = nullptr;
+    std::shared_ptr<Tile> previewTile = std::make_shared<Tile>();
+
+    inputs key;
+    while (true) {
+        board.displayBoard(display_mode::PLACING, row, col, playerIndex, previewTile, false);
+
+        key = inputHandler.getKeyPress();
+        switch (key) {
+            case UP: if (row > 0) --row; break;
+            case DOWN: if (row < board.getSize() - 1) ++row; break;
+            case LEFT: if (col > 0) --col; break;
+            case RIGHT: if (col < board.getSize() - 1) ++col; break;
+            case ENTER:
+                selectedTile = board.getTileAt(row, col);
+                if (selectedTile && board.getCellAt(row, col) == STONE_CELL) {
+                    board.removeTile(selectedTile);
+                    return;
+                }
+                break;
+            default: break;
+        }
+        menu.clearLines(board.getSize() + 3);
+    }
+}
+
+void Game::playerPlaceStone(int playerIndex) {
+    InputHandler inputHandler;
+    int row = 0, col = 0;
+    bool canPlace = false;
+    std::shared_ptr<Tile> previewTile = std::make_shared<Tile>();
+
+    inputs key;
+    while (true) {
+        board.displayBoard(display_mode::PLACING, row, col, playerIndex, previewTile, false);
+
+        key = inputHandler.getKeyPress();
+        switch (key) {
+            case UP: if (row > 0) --row; break;
+            case DOWN: if (row < board.getSize() - 1) ++row; break;
+            case LEFT: if (col > 0) --col; break;
+            case RIGHT: if (col < board.getSize() - 1) ++col; break;
+            case ENTER:
+                if (!board.getTileAt(row, col)) {
+                    std::shared_ptr<Tile> stoneTile = std::make_shared<Tile>();
+                    board.placeTile(stoneTile, row, col, STONE_CELL);
+                    return;
+                }
+                break;
+            default: break;
+        }
+        menu.clearLines(board.getSize() + 3);
     }
 }
 
@@ -186,20 +261,25 @@ void Game::useBonuses(std::shared_ptr<Player> player) {
 
     while (player->getRobberyBonus() > 0) {
         std::cout << "You have a robbery bonus! Select an enemy tile to steal." << std::endl << std::endl;
-        std::shared_ptr<Tile> stolenTile = playerSelectTile(playerIndex);
+        std::shared_ptr<Tile> stolenTile = playerRemoveEnemyTile(playerIndex);
         std::cout << "Tile stolen! You can now modify and place it." << std::endl << std::endl;
         player->addRobberyBonus(-1);
 
-
         stolenTile->setOwnerId(player->getId());
         placeTile(stolenTile, player);
+    }
 
+    while (player->getStoneBonus() > 0) {
+        std::cout << "You have a stone bonus! Place it on an empty cell." << std::endl << std::endl;
+        playerPlaceStone(playerIndex);
+        player->addStoneBonus(-1);
     }
 
 }
 
 
 void Game::endGame() {
+    // make player place 1x1 tiles
     auto winner = board.determineWinner();
     menu.displayWinner(winner->getId());
 }

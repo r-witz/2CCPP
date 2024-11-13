@@ -65,12 +65,13 @@ void Board::displayBoard(display_mode mode, int row, int col, int current_player
                         case bonus_state::TILE_EXCHANGE: bonus_color = tile_exchange_color; break;
                         default: bonus_color = reset_color; break;
                     }
-                    std::cout << convertForegroundToBackground(owner_color) << bonus_color << "◖◗" << reset_color;
+                    std::cout << convertForegroundToBackground(owner_color) << bonus_color << "◢◣" << reset_color;
                 }
                 else if (board[i][j] == cell_state::EMPTY) { std::cout << "  "; }
+                else if (board[i][j] == cell_state::STONE_CELL) {std::cout << stone_color << "██" << reset_color; }
                 else {
-                    std::string playerColor = players[ownerId - 1]->getColor();
-                    std::cout << playerColor << "██" << reset_color;
+                    std::string player_color = players[ownerId - 1]->getColor();
+                    std::cout << player_color << "██" << reset_color;
                 }
             }
         }
@@ -231,12 +232,13 @@ bool Board::canPlaceTile(std::shared_ptr<Tile> tile, int row, int col, bool firs
     return firstRound || touchesSamePlayerTile;
 }
 
-void Board::placeTile(std::shared_ptr<Tile> tile, int row, int col) {
+void Board::placeTile(std::shared_ptr<Tile> tile, int row, int col, cell_state cell_type) {
     int ownerId = tile->getOwnerId();
+    cell_state cell = cell_type != EMPTY ? cell_type : static_cast<cell_state>(ownerId);
     for (int i = 0; i < tile->getGrid().size(); i++) {
         for (int j = 0; j < tile->getGrid()[0].size(); j++) {
             if (tile->getGrid()[i][j]) {
-                board[row + i][col + j] = static_cast<cell_state>(ownerId);
+                board[row + i][col + j] = cell;
                 tileMapping[row + i][col + j] = tile;
             }
         }
@@ -259,6 +261,19 @@ void Board::removeTile(std::shared_ptr<Tile> tileToRemove) {
 
 std::shared_ptr<Tile> Board::getTileAt(int row, int col) {
     return tileMapping[row][col];
+}
+
+cell_state Board::getCellAt(int row, int col) {
+    return board[row][col];
+}
+
+bool Board::isStoneOnBoard() {
+    for (int i = 0; i < size; ++i) {
+        for (int j = 0; j < size; ++j) {
+            if (board[i][j] == cell_state::STONE_CELL) { return true; }
+        }
+    }
+    return false;
 }
 
 std::shared_ptr<Player> Board::determineWinner() {

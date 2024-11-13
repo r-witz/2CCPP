@@ -8,7 +8,7 @@
 
 enum main_menu_options { PLAY, EXIT };
 enum player_color_options { RED, BLUE, GREEN, YELLOW, PINK, BROWN, CYAN, ORANGE, VIOLET };
-enum tile_selection_options { TAKE, EXCHANGE };
+enum tile_selection_options { TAKE, EXCHANGE, REMOVE_STONE };
 enum tile_action_options { FLIP, ROTATE, PLACE };
 
 class Menu {
@@ -28,7 +28,7 @@ public:
     void displayTitle();
     main_menu_options mainMenu();
     player_color_options playerColor(int player_number);
-    tile_selection_options tileSelection(int exchange_coupon);
+    tile_selection_options tileSelection(int exchange_coupon, bool isStoneToClear);
     tile_action_options tileAction();
     void displayWinner(int player_number);
 
