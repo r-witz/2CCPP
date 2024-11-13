@@ -30,6 +30,7 @@ private:
     void playerRemoveStone(int playerIndex);
     void playerPlaceStone(int playerIndex);
     void useBonuses(std::shared_ptr<Player> player);
+    void placeBonusTile();
     void endGame();
 
 public:

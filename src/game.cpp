@@ -277,9 +277,29 @@ void Game::useBonuses(std::shared_ptr<Player> player) {
 
 }
 
+void Game::placeBonusTile() {
+    bonus_tiles_options action;
+    for (int i = 0; i < players.size(); ++i) {
+        if (players[i]->getTileExchangeCoupon() > 0) {
+            std::cout << "Player " << players[i]->getId() << " has a tile exchange coupon." << std::endl << std::endl;
+            action = menu.bonusTiles(players[i]->getTileExchangeCoupon());
+            std::shared_ptr<Tile> tile;
+            switch (action) {
+                case bonus_tiles_options::YES:
+                    tile = std::make_shared<Tile>();
+                    playerPlaceTile(tile, i, true);
+                    break;
+                case bonus_tiles_options::NO:
+                    break;
+                
+            }
+            players[i]->addTileExchangeCoupon(-1);
+        }
+    }
+}
 
 void Game::endGame() {
-    // make player place 1x1 tiles
+    placeBonusTile();
     auto winner = board.determineWinner();
     menu.displayWinner(winner->getId());
 }

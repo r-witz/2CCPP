@@ -233,6 +233,48 @@ tile_action_options Menu::tileAction() {
     return selected_option;
 };
 
+void Menu::displayBonusTilesMenu(int exchange_coupon, bonus_tiles_options selected_option) {
+    std::string yesLine = "|        Yes       |";
+    std::string noLine = "|        No        |";
+
+    switch (selected_option) {
+        case bonus_tiles_options::YES:
+            yesLine = "|      ▶ Yes       |";
+            break;
+        case bonus_tiles_options::NO:
+            noLine = "|      ▶ No        |";
+    }
+
+    std::cout << "+------------------+" << std::endl
+              << "|                  |" << std::endl
+              << "|  Do you want to  |" << std::endl
+              << "|  place 1x1 tile  |" << std::endl
+              << "|                  |" << std::endl
+              << yesLine << std::endl
+              << noLine << std::endl
+              << "|                  |" << std::endl
+              << "+------------------+" << std::endl
+              << std::endl;
+}
+
+bonus_tiles_options Menu::bonusTiles(int exchange_coupon) {
+    bonus_tiles_options selected_option = bonus_tiles_options::YES;
+    inputs input;
+
+    do {
+        displayBonusTilesMenu(exchange_coupon, selected_option);
+        input = input_handler.getKeyPress();
+        if (input == inputs::UP || input == inputs::DOWN) {
+            selected_option = selected_option == bonus_tiles_options::YES ? bonus_tiles_options::NO : bonus_tiles_options::YES;
+        }
+
+        if (input != inputs::ENTER) { clearLines(10); };
+
+    } while(input != inputs::ENTER);
+
+    return selected_option;
+}
+
 void Menu::displayWinner(int player_number) {
     std::cout << "+------------------+" << std::endl
               << "|                  |" << std::endl
