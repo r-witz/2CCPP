@@ -145,10 +145,10 @@ bool Game::canPlaceTileAnywhere(std::shared_ptr<Tile> &tile) {
     return false;
 }
 
-void Game::playerPlaceTile(std::shared_ptr<Tile> tile, int playerIndex, bool firstRound) {
+void Game::playerPlaceTile(std::shared_ptr<Tile> tile, int playerIndex, bool firstRound, bool bonusTilePlacement) {
     InputHandler inputHandler;
     int row = 0, col = 0;
-    bool canPlace = board.canPlaceTile(tile, row, col, firstRound);
+    bool canPlace = board.canPlaceTile(tile, row, col, firstRound, bonusTilePlacement);
 
     inputs key;
     while(true) {
@@ -165,7 +165,7 @@ void Game::playerPlaceTile(std::shared_ptr<Tile> tile, int playerIndex, bool fir
         }
 
         if (key != ENTER) { menu.clearLines(board.getSize() + 3); }
-        canPlace = board.canPlaceTile(tile, row, col, firstRound);
+        canPlace = board.canPlaceTile(tile, row, col, firstRound, bonusTilePlacement);
     };
 }
 
@@ -280,18 +280,18 @@ void Game::useBonuses(std::shared_ptr<Player> player) {
 void Game::placeBonusTile() {
     bonus_tiles_options action;
     for (int i = 0; i < players.size(); ++i) {
-        if (players[i]->getTileExchangeCoupon() > 0) {
+        while (players[i]->getTileExchangeCoupon() > 0) {
             std::cout << "Player " << players[i]->getId() << " has a tile exchange coupon." << std::endl << std::endl;
             action = menu.bonusTiles(players[i]->getTileExchangeCoupon());
             std::shared_ptr<Tile> tile;
             switch (action) {
                 case bonus_tiles_options::YES:
                     tile = std::make_shared<Tile>();
-                    playerPlaceTile(tile, i, true);
+                    tile->setOwnerId(players[i]->getId());
+                    playerPlaceTile(tile, players[i]->getId(), false, true);
                     break;
                 case bonus_tiles_options::NO:
                     break;
-                
             }
             players[i]->addTileExchangeCoupon(-1);
         }

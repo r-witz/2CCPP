@@ -34,7 +34,7 @@ public:
     void placeBonus(int number_player);
 
     void claimSurroundedBonuses();
-    bool canPlaceTile(std::shared_ptr<Tile> tile, int row, int col, bool firstRound);
+    bool canPlaceTile(std::shared_ptr<Tile> tile, int row, int col, bool firstRound, bool bonusTilePlacement=false);
     void placeTile(std::shared_ptr<Tile> tile, int row, int col, cell_state cell_type=EMPTY);
     void removeTile(std::shared_ptr<Tile> tileToRemove);
     std::shared_ptr<Tile> getTileAt(int row, int col);

@@ -25,7 +25,7 @@ private:
     void placeTile(std::shared_ptr<Tile>& selectedTile, const std::shared_ptr<Player> player);
     bool canPlaceTileAnywhere(std::shared_ptr<Tile> &tile);
     void displayPlayerTurn(const std::shared_ptr<Player> player, int round) const;
-    void playerPlaceTile(std::shared_ptr<Tile> tile, int playerIndex, bool firstRound);
+    void playerPlaceTile(std::shared_ptr<Tile> tile, int playerIndex, bool firstRound, bool bonusTilePlacement=false);
     std::shared_ptr<Tile> playerRemoveEnemyTile(int playerIndex);
     void playerRemoveStone(int playerIndex);
     void playerPlaceStone(int playerIndex);
