@@ -81,9 +81,9 @@ Install the game folder on your computer > Open a terminal > Go to the game fold
 
 Special squares provide unique benefits and can only be activated by placing tiles adjacent to them on **all four cardinal sides (left, right, above, and below)**. Once activated, the square joins the player's territory.
 
-- **Tile Exchange Square**: Grants the player **one additional tile exchange coupon**. There are approximately 1.5 of these squares per player, rounded up.
-- **Stone Square**: Allows the player to place a **stone tile** on any empty space, blocking others from placing tiles on that spot. Removing a stone tile costs one tile exchange coupon. There are approximately 0.5 of these squares per player, rounded up.
-- **Robbery Square**: Lets the player **take a tile from another player** and add it to their territory. There is one robbery square per player.
+- **Tile Exchange Square**: Grants the player **one additional tile exchange coupon**. There are approximately 1.5 of these squares per player, rounded up. (Dark Green triangle)
+- **Stone Square**: Allows the player to place a **stone tile** on any empty space, blocking others from placing tiles on that spot. Removing a stone tile costs one tile exchange coupon. There are approximately 0.5 of these squares per player, rounded up. (Gray triangle)
+- **Robbery Square**: Lets the player **take a tile from another player** and add it to their territory. There is one robbery square per player. (Cream triangle)
 
 **Note**: Stone and robbery squares must be used immediately upon activation. Bonuses are randomly distributed at the beginning of the game and cannot be placed at board edges or near other bonuses. Players may cover bonus squares, which makes them inactive.
 
